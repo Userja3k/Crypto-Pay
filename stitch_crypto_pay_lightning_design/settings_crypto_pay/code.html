@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500&amp;family=Geist:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Hanken+Grotesk:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            backdrop-filter: blur(40px);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0px 20px 40px rgba(0,0,0,0.4);
+        }
+        .inner-glow:active {
+            box-shadow: inset 0px 2px 4px rgba(255, 255, 255, 0.1);
+            transform: scale(0.98);
+        }
+        body {
+            background-color: #000000;
+            color: #e2e2e2;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom toggle styling */
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #ffffff;
+        }
+        .toggle-checkbox:checked + .toggle-label .toggle-dot {
+            transform: translateX(100%);
+            background-color: #000000;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#c6c6c7",
+                      "primary-container": "#e2e2e2",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-tertiary": "#68000a",
+                      "secondary": "#4de082",
+                      "secondary-fixed": "#6dfe9c",
+                      "outline-variant": "#444748",
+                      "on-primary-container": "#636565",
+                      "tertiary-container": "#ffdad7",
+                      "error-container": "#93000a",
+                      "on-primary": "#2f3131",
+                      "tertiary-fixed-dim": "#ffb3ad",
+                      "surface-dim": "#131313",
+                      "secondary-fixed-dim": "#4de082",
+                      "inverse-on-surface": "#303030",
+                      "surface": "#131313",
+                      "surface-container-high": "#2a2a2a",
+                      "on-error": "#690005",
+                      "primary": "#ffffff",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-secondary-container": "#003e1c",
+                      "error": "#ffb4ab",
+                      "on-tertiary-fixed-variant": "#930013",
+                      "on-tertiary-container": "#c22229",
+                      "tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005227",
+                      "on-surface": "#e2e2e2",
+                      "surface-bright": "#393939",
+                      "inverse-surface": "#e2e2e2",
+                      "on-secondary": "#003919",
+                      "on-tertiary-fixed": "#410004",
+                      "surface-container-low": "#1b1b1b",
+                      "on-primary-fixed-variant": "#454747",
+                      "surface-container": "#1f1f1f",
+                      "on-primary-fixed": "#1a1c1c",
+                      "on-error-container": "#ffdad6",
+                      "background": "#131313",
+                      "secondary-container": "#00b55d",
+                      "outline": "#8e9192",
+                      "primary-fixed": "#e2e2e2",
+                      "surface-variant": "#353535",
+                      "inverse-primary": "#5d5f5f",
+                      "on-secondary-fixed": "#00210c",
+                      "on-background": "#e2e2e2",
+                      "on-surface-variant": "#c4c7c8",
+                      "surface-tint": "#c6c6c7",
+                      "surface-container-highest": "#353535"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-page": "24px",
+                      "gutter": "16px",
+                      "stack-sm": "8px",
+                      "safe-area-bottom": "34px",
+                      "stack-md": "16px",
+                      "stack-lg": "32px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Hanken Grotesk"],
+                      "headline-lg-mobile": ["Hanken Grotesk"],
+                      "mono-data": ["Geist"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Geist"],
+                      "display-lg": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-black min-h-screen pb-safe-area-bottom font-body-md text-on-surface overflow-x-hidden">
+<!-- Top AppBar -->
+<header class="flex justify-between items-center px-margin-page pt-stack-md w-full max-w-[480px] mx-auto bg-transparent fixed top-0 left-0 right-0 z-50">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Bonjour, Jean 👋</h1>
+<div class="flex items-center gap-stack-md">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-white/20">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A professional high-fidelity portrait of a smiling young African male tech professional with short hair, wearing a white minimalist shirt. The background is a soft, out-of-focus futuristic office with glass partitions and cool blue and dark black lighting, maintaining a premium liquid glass aesthetic. High-end editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRt5T9Y1NgARTs6QQqwR3aR8cM70QHDxSkItcTO4B2WFpdE5eTLP8MzHGad7He2VQ2oEGXZrhMelB_rgoC0bAzWYKgtyz3OWKpou5tWPSsHYTxyIhio2ABGHvwH0e-TxlWFq239Lm4UgYykpho7MPseQKN4MbgKfXv8RwClQEXF8JDMVCb1kLcwU8dcmv8CwhYyUqi2QmvF4uncsEFHh1td45532mH5dGcN0I0mPsC3YGV8HEUxb729rUG5nsoQ-DknarEdKfzBz8"/>
+</div>
+</div>
+</header>
+<main class="w-full max-w-[480px] mx-auto px-margin-page pt-24 pb-32 flex flex-col gap-stack-lg">
+<!-- Section: Compte -->
+<section class="flex flex-col gap-stack-sm">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant px-2">COMPTE</h2>
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<span class="text-on-surface">Jean Dupont</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<span class="text-on-surface">jean.dupont@crypto.pay</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-stack-md inner-glow">
+<span class="text-on-surface">+243 821 000 000</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Section: Sécurité -->
+<section class="flex flex-col gap-stack-sm">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant px-2">SÉCURITÉ</h2>
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="lock">lock</span>
+<span class="text-on-surface">Modifier PIN</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between p-stack-md border-b border-white/5">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="face">face</span>
+<span class="text-on-surface">Face ID</span>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-transparent appearance-none cursor-pointer z-10 opacity-0" id="faceid" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-white/10 cursor-pointer transition-colors duration-300" for="faceid">
+<span class="toggle-dot block w-6 h-6 rounded-full bg-on-surface-variant shadow-sm transition-transform duration-300"></span>
+</label>
+</div>
+</div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between p-stack-md">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="fingerprint">fingerprint</span>
+<span class="text-on-surface">Fingerprint</span>
+</div>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-transparent appearance-none cursor-pointer z-10 opacity-0" id="fingerprint" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-white/10 cursor-pointer transition-colors duration-300" for="fingerprint">
+<span class="toggle-dot block w-6 h-6 rounded-full bg-on-surface-variant shadow-sm transition-transform duration-300"></span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Paiements -->
+<section class="flex flex-col gap-stack-sm">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant px-2">PAIEMENTS</h2>
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<div class="flex flex-col">
+<span class="text-on-surface">Devise principale</span>
+<span class="text-label-sm text-on-surface-variant">USD</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<div class="flex flex-col">
+<span class="text-on-surface">Limites</span>
+<span class="text-label-sm text-on-surface-variant">$5000 hebdomadaire</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="p-stack-md">
+<span class="text-on-surface mb-stack-md block">Confirmation requise</span>
+<div class="flex flex-col gap-stack-md">
+<label class="flex items-center gap-stack-md cursor-pointer">
+<input checked="" class="w-5 h-5 rounded bg-white/10 border-white/20 text-primary focus:ring-0" type="checkbox"/>
+<span class="text-on-surface">PIN</span>
+</label>
+<label class="flex items-center gap-stack-md cursor-pointer">
+<input checked="" class="w-5 h-5 rounded bg-white/10 border-white/20 text-primary focus:ring-0" type="checkbox"/>
+<span class="text-on-surface">Biométrie</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Apparence -->
+<section class="flex flex-col gap-stack-sm">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant px-2">APPARENCE</h2>
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<span class="text-on-surface">Theme</span>
+<div class="flex items-center gap-stack-sm bg-white/5 rounded-full p-1">
+<span class="px-3 py-1 bg-white text-black rounded-full text-label-sm font-medium">Dark</span>
+<span class="px-3 py-1 text-on-surface-variant text-label-sm font-medium">Light</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<span class="text-on-surface">Liquid Glass Intensity</span>
+<span class="text-on-surface-variant text-label-sm">Medium</span>
+</div>
+<div class="flex items-center justify-between p-stack-md">
+<span class="text-on-surface">Animations</span>
+<div class="relative inline-block w-12 h-6 transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-transparent appearance-none cursor-pointer z-10 opacity-0" id="animations" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-white/10 cursor-pointer transition-colors duration-300" for="animations">
+<span class="toggle-dot block w-6 h-6 rounded-full bg-on-surface-variant shadow-sm transition-transform duration-300"></span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Langue -->
+<section class="flex flex-col gap-stack-sm">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant px-2">LANGUE</h2>
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow bg-white/5">
+<span class="text-on-surface">Français</span>
+<span class="material-symbols-outlined text-primary" data-icon="check" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<div class="flex items-center justify-between p-stack-md border-b border-white/5 inner-glow">
+<span class="text-on-surface-variant">Anglais</span>
+</div>
+<div class="flex items-center justify-between p-stack-md inner-glow">
+<span class="text-on-surface-variant">Swahili</span>
+</div>
+</div>
+</section>
+<!-- Section: Support & About -->
+<section class="flex flex-col gap-stack-sm">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant px-2">SUPPORT &amp; ABOUT</h2>
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-stack-md border-b border-white/5">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="bolt">bolt</span>
+<span class="text-on-surface">Lightning Status</span>
+</div>
+<div class="px-3 py-1 bg-secondary/20 text-secondary rounded-full text-label-sm font-medium">Connecté</div>
+</div>
+<div class="flex items-center justify-between p-stack-md inner-glow">
+<span class="text-on-surface-variant">Version 1.0.0</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="info">info</span>
+</div>
+</div>
+<button class="w-full mt-stack-md py-4 glass-card rounded-lg font-medium text-error border-error/20 flex items-center justify-center gap-stack-sm hover:bg-error/10 transition-colors inner-glow">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Déconnexion
+            </button>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-stack-lg left-0 right-0 z-50 flex justify-around items-center py-stack-sm px-gutter">
+<div class="bg-white/10 backdrop-blur-[40px] border border-white/10 shadow-[0px_20px_40px_rgba(0,0,0,0.4)] fixed bottom-stack-lg left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-[432px] rounded-lg flex justify-around items-center py-stack-sm px-4">
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:bg-white/20 transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:bg-white/20 transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:bg-white/20 transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</a>
+<!-- Active Tab: Settings -->
+<a class="flex items-center justify-center bg-white text-black rounded-full w-12 h-12 hover:opacity-90 transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+</a>
+</div>
+</nav>
+<!-- Background Decorative Luminous Highlights -->
+<div class="fixed top-[-10%] right-[-20%] w-[60%] h-[60%] bg-white/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="fixed bottom-[-10%] left-[-20%] w-[60%] h-[60%] bg-secondary/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<script>
+        // Micro-interaction for toggles
+        document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const dot = this.nextElementSibling.querySelector('.toggle-dot');
+                if (this.checked) {
+                    dot.style.transform = 'translateX(100%)';
+                    dot.style.backgroundColor = '#000000';
+                    this.nextElementSibling.style.backgroundColor = '#ffffff';
+                } else {
+                    dot.style.transform = 'translateX(0)';
+                    dot.style.backgroundColor = '#c4c7c8';
+                    this.nextElementSibling.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+            });
+        });
+
+        // Initialize Toggle states
+        document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
+            const dot = toggle.nextElementSibling.querySelector('.toggle-dot');
+            if (toggle.checked) {
+                dot.style.transform = 'translateX(100%)';
+                dot.style.backgroundColor = '#000000';
+                toggle.nextElementSibling.style.backgroundColor = '#ffffff';
+            }
+        });
+    </script>
+</body></html>

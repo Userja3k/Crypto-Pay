@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #000000;
+            color: #e2e2e2;
+            overflow-x: hidden;
+        }
+        .liquid-glass {
+            backdrop-filter: blur(40px);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0px 20px 40px rgba(0,0,0,0.4);
+        }
+        .input-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus-within {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .progress-glow {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        .bg-void {
+            background: radial-gradient(circle at 50% -20%, #1a1a1a 0%, #000000 100%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#c6c6c7",
+                      "secondary-fixed": "#6dfe9c",
+                      "on-tertiary-fixed": "#410004",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-tertiary-container": "#c22229",
+                      "surface-dim": "#131313",
+                      "primary-fixed": "#e2e2e2",
+                      "surface-variant": "#353535",
+                      "primary": "#ffffff",
+                      "error": "#ffb4ab",
+                      "primary-container": "#e2e2e2",
+                      "tertiary-fixed-dim": "#ffb3ad",
+                      "secondary-fixed-dim": "#4de082",
+                      "primary-fixed-dim": "#c6c6c7",
+                      "on-secondary": "#003919",
+                      "inverse-on-surface": "#303030",
+                      "background": "#131313",
+                      "on-secondary-fixed": "#00210c",
+                      "on-tertiary-fixed-variant": "#930013",
+                      "surface": "#131313",
+                      "tertiary": "#ffffff",
+                      "surface-container-highest": "#353535",
+                      "outline-variant": "#444748",
+                      "tertiary-container": "#ffdad7",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-surface-variant": "#c4c7c8",
+                      "surface-bright": "#393939",
+                      "on-primary": "#2f3131",
+                      "on-tertiary": "#68000a",
+                      "on-surface": "#e2e2e2",
+                      "outline": "#8e9192",
+                      "secondary-container": "#00b55d",
+                      "on-background": "#e2e2e2",
+                      "inverse-surface": "#e2e2e2",
+                      "inverse-primary": "#5d5f5f",
+                      "surface-container-low": "#1b1b1b",
+                      "on-primary-fixed-variant": "#454747",
+                      "surface-container": "#1f1f1f",
+                      "on-primary-container": "#636565",
+                      "on-error-container": "#ffdad6",
+                      "on-primary-fixed": "#1a1c1c",
+                      "surface-container-high": "#2a2a2a",
+                      "on-secondary-container": "#003e1c",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "on-secondary-fixed-variant": "#005227",
+                      "secondary": "#4de082"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "32px",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-page": "24px",
+                      "gutter": "16px",
+                      "stack-lg": "32px",
+                      "stack-sm": "8px",
+                      "stack-md": "16px",
+                      "safe-area-bottom": "34px"
+              },
+              "fontFamily": {
+                      "mono-data": ["Geist"],
+                      "headline-lg": ["Hanken Grotesk"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["Hanken Grotesk"],
+                      "label-sm": ["Geist"],
+                      "display-lg": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-void min-h-screen flex flex-col items-center justify-start antialiased overflow-y-auto">
+<!-- Top AppBar (Derived from Shared Component Logic for sub-page) -->
+<header class="w-full top-0 sticky backdrop-blur-xl border-b border-white/10 shadow-[0px_20px_40px_rgba(0,0,0,0.4)] z-50">
+<div class="flex justify-between items-center px-margin-page h-16 w-full max-w-[480px] mx-auto">
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-[20px] font-bold text-primary tracking-tight">Crypto-Pay</h1>
+<div class="w-6"></div> <!-- Spacer for balance -->
+</div>
+</header>
+<main class="w-full max-w-[480px] px-margin-page py-stack-lg flex flex-col gap-stack-lg">
+<!-- Progress Indicator -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant">ÉTAPE 1 SUR 4</span>
+<span class="font-mono-data text-mono-data text-primary">25%</span>
+</div>
+<div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-white w-1/4 progress-glow rounded-full"></div>
+</div>
+</div>
+<!-- Headline -->
+<div class="flex flex-col gap-2">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Créer un compte</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Commencez votre voyage vers la liberté financière liquide.</p>
+</div>
+<!-- Form Section -->
+<form class="flex flex-col gap-stack-md" onsubmit="event.preventDefault();">
+<!-- Full Name Input -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-2">NOM COMPLET</label>
+<div class="input-glass rounded-xl flex items-center px-4 py-4 gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">person</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-md text-body-md text-primary placeholder:text-white/20" placeholder="Jean Dupont" type="text"/>
+</div>
+</div>
+<!-- Email Input -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-2">ADRESSE E-MAIL</label>
+<div class="input-glass rounded-xl flex items-center px-4 py-4 gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">mail</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-md text-body-md text-primary placeholder:text-white/20" placeholder="jean@exemple.com" type="email"/>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-2">NUMÉRO DE TÉLÉPHONE</label>
+<div class="input-glass rounded-xl flex items-center px-4 py-4 gap-3">
+<div class="flex items-center gap-1 border-r border-white/10 pr-3 mr-1">
+<img alt="FR Flag" class="w-5 h-auto rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsOcchVMx8eH-e08DnaEX8f8VyiSBxqgEoTmHhDQmFvEoZ-J7xY8nRTd-AQ5QJqZvdQbqE_P7DeebQVPQQg8lHRyn30x2FjSguxPx4NA8HDTQMwl3YBzp7EXSSxTsBmp3ANbQPX7lVcJM5XHAaKt3cy8spwTcwSCXLtArZBTrsKy4UeyJ7C26BOTjZCoZnjCgDhk8I26dm8-xPoUuV6x7Bcfx3C7vRvXoKWaSzDy4ZuPeHJCXplYUr_E6rREGhCAdXS45QDQR-xyU"/>
+<span class="font-mono-data text-mono-data text-primary">+33</span>
+</div>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-md text-body-md text-primary placeholder:text-white/20" placeholder="06 12 34 56 78" type="tel"/>
+</div>
+</div>
+<!-- Privacy Policy Checkbox -->
+<div class="flex items-start gap-3 px-2 mt-4">
+<div class="relative flex items-center h-5">
+<input class="w-5 h-5 rounded bg-white/10 border-white/20 text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" id="privacy" type="checkbox"/>
+</div>
+<label class="font-label-sm text-label-sm text-on-surface-variant leading-tight" for="privacy">
+                    J'accepte la <span class="text-primary underline">Politique de Confidentialité</span> et les <span class="text-primary underline">Conditions d'Utilisation</span>.
+                </label>
+</div>
+<!-- Primary Button -->
+<button class="mt-stack-lg w-full bg-white text-on-primary py-5 rounded-full font-headline-lg-mobile text-[18px] font-bold hover:bg-opacity-90 active:scale-[0.98] transition-all duration-200 shadow-[0_10px_20px_rgba(255,255,255,0.1)]">
+                Continuer
+            </button>
+</form>
+<!-- Visual Decorative Layer -->
+<div class="relative w-full h-40 mt-stack-lg rounded-xl overflow-hidden liquid-glass flex items-center justify-center">
+<div class="absolute inset-0 opacity-40">
+<div class="absolute top-[-50%] left-[-20%] w-[140%] h-[200%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-secondary/10"></div>
+</div>
+<div class="z-10 text-center flex flex-col items-center gap-2">
+<div class="p-3 bg-secondary/20 rounded-full">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<p class="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Lightning Network</p>
+<p class="text-[10px] font-mono-data text-white/40 max-w-[200px]">Sécurité de niveau institutionnel avec la rapidité de la lumière.</p>
+</div>
+<!-- Dynamic Mesh Background Simulation -->
+<div class="absolute -bottom-10 -right-10 w-32 h-32 bg-secondary/30 blur-[60px] rounded-full"></div>
+<div class="absolute -top-10 -left-10 w-24 h-24 bg-primary/10 blur-[40px] rounded-full"></div>
+</div>
+</main>
+<footer class="mt-auto py-8 w-full max-w-[480px] px-margin-page text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Vous avez déjà un compte ? <span class="text-primary font-bold ml-1">Se connecter</span></p>
+</footer>
+<script>
+        // Micro-interaction for input fields focus light-up
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('shadow-[0_0_20px_rgba(255,255,255,0.05)]');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('shadow-[0_0_20px_rgba(255,255,255,0.05)]');
+            });
+        });
+
+        // Atmospheric mouse track for glass highlights (simplified for performance)
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            document.body.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, #1a1a1a 0%, #000000 100%)`;
+        });
+    </script>
+</body></html>

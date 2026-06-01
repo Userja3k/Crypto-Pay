@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Hanken+Grotesk:wght@600;700&amp;family=Geist:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Hanken+Grotesk:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #000000;
+            color: #e2e2e2;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-surface {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .luminous-glow {
+            box-shadow: 0px 0px 20px rgba(77, 224, 130, 0.2);
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#c6c6c7",
+                    "secondary-fixed": "#6dfe9c",
+                    "on-tertiary-fixed": "#410004",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-container": "#c22229",
+                    "surface-dim": "#131313",
+                    "primary-fixed": "#e2e2e2",
+                    "surface-variant": "#353535",
+                    "primary": "#ffffff",
+                    "error": "#ffb4ab",
+                    "primary-container": "#e2e2e2",
+                    "tertiary-fixed-dim": "#ffb3ad",
+                    "secondary-fixed-dim": "#4de082",
+                    "primary-fixed-dim": "#c6c6c7",
+                    "on-secondary": "#003919",
+                    "inverse-on-surface": "#303030",
+                    "background": "#131313",
+                    "on-secondary-fixed": "#00210c",
+                    "on-tertiary-fixed-variant": "#930013",
+                    "surface": "#131313",
+                    "tertiary": "#ffffff",
+                    "surface-container-highest": "#353535",
+                    "outline-variant": "#444748",
+                    "tertiary-container": "#ffdad7",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-surface-variant": "#c4c7c8",
+                    "surface-bright": "#393939",
+                    "on-primary": "#2f3131",
+                    "on-tertiary": "#68000a",
+                    "on-surface": "#e2e2e2",
+                    "outline": "#8e9192",
+                    "secondary-container": "#00b55d",
+                    "on-background": "#e2e2e2",
+                    "inverse-surface": "#e2e2e2",
+                    "inverse-primary": "#5d5f5f",
+                    "surface-container-low": "#1b1b1b",
+                    "on-primary-fixed-variant": "#454747",
+                    "surface-container": "#1f1f1f",
+                    "on-primary-container": "#636565",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed": "#1a1c1c",
+                    "surface-container-high": "#2a2a2a",
+                    "on-secondary-container": "#003e1c",
+                    "error-container": "#93000a",
+                    "on-error": "#690005",
+                    "on-secondary-fixed-variant": "#005227",
+                    "secondary": "#4de082"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "24px",
+                    "gutter": "16px",
+                    "stack-lg": "32px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "safe-area-bottom": "34px"
+            },
+            "fontFamily": {
+                    "mono-data": ["Geist"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-sm": ["Geist"],
+                    "display-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-black min-h-screen flex flex-col items-center overflow-hidden">
+<!-- BACKGROUND HOME SCREEN (BLURRED) -->
+<main class="w-full max-w-[480px] min-h-screen px-margin-page pt-24 pb-32 filter blur-md opacity-40 pointer-events-none">
+<!-- Dashboard Mockup -->
+<header class="flex justify-between items-center mb-stack-lg">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Solde total</p>
+<h1 class="font-display-lg text-display-lg text-primary">$12,450.00</h1>
+</div>
+<div class="w-12 h-12 rounded-full glass-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</div>
+</header>
+<section class="grid grid-cols-2 gap-gutter mb-stack-lg">
+<div class="glass-surface p-stack-md rounded-lg h-32 flex flex-col justify-end">
+<span class="material-symbols-outlined text-secondary mb-2">bolt</span>
+<p class="font-label-sm text-label-sm">Envoyer</p>
+</div>
+<div class="glass-surface p-stack-md rounded-lg h-32 flex flex-col justify-end">
+<span class="material-symbols-outlined text-primary mb-2">add</span>
+<p class="font-label-sm text-label-sm">Recevoir</p>
+</div>
+</section>
+<section class="space-y-stack-sm">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">Transactions</h2>
+<div class="glass-surface p-4 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+<div>
+<p class="font-body-md text-body-md">Netflix</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Aujourd'hui, 14:20</p>
+</div>
+</div>
+<p class="font-mono-data text-mono-data text-error">-$15.99</p>
+</div>
+</section>
+</main>
+<!-- SUCCESS OVERLAY CONTAINER -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-margin-page">
+<!-- CENTRAL GLASS CARD -->
+<div class="glass-surface w-full max-w-[380px] rounded-xl p-8 flex flex-col items-center text-center shadow-[0px_40px_80px_rgba(0,0,0,0.6)] border border-white/20 animate-in fade-in zoom-in duration-500">
+<!-- GREEN CHECKMARK ICON -->
+<div class="w-20 h-20 rounded-full bg-secondary/10 flex items-center justify-center mb-stack-lg luminous-glow">
+<span class="material-symbols-outlined text-secondary text-5xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- SUCCESS CONTENT -->
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-stack-sm">Paiement Envoyé</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-lg">Votre transfert a été traité avec succès.</p>
+<!-- AMOUNT TILE -->
+<div class="w-full bg-white/5 rounded-lg p-6 mb-stack-lg border border-white/5">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1">Montant</p>
+<p class="font-display-lg text-display-lg text-primary">$20.00</p>
+</div>
+<!-- TRANSACTION DETAILS -->
+<div class="w-full space-y-4 mb-stack-lg px-2">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Destinataire</span>
+<span class="font-body-md text-body-md text-primary font-medium">Papa</span>
+</div>
+<div class="h-[1px] bg-white/5 w-full"></div>
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Date</span>
+<span class="font-body-md text-body-md text-primary">24 Mai 2024</span>
+</div>
+<div class="h-[1px] bg-white/5 w-full"></div>
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID Transaction</span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">#TXN-8829-XQ</span>
+</div>
+</div>
+<!-- TERMINER BUTTON -->
+<button class="w-full bg-primary text-on-primary py-4 rounded-full font-body-md font-semibold active:scale-95 transition-transform duration-200 shadow-lg shadow-white/5">
+                Terminer
+            </button>
+</div>
+</div>
+<!-- ATMOSPHERIC BACKGROUND GRADIENT -->
+<div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px] pointer-events-none -z-10"></div>
+<div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px] pointer-events-none -z-10"></div>
+<script>
+        // Simple click interaction to mock closing
+        document.querySelector('button').addEventListener('click', () => {
+            document.querySelector('.fixed.inset-0').classList.add('opacity-0', 'scale-95');
+            document.querySelector('.fixed.inset-0').style.transition = 'all 0.4s ease-out';
+            setTimeout(() => {
+                document.querySelector('.fixed.inset-0').style.display = 'none';
+                document.querySelector('main').classList.remove('blur-md', 'opacity-40');
+                document.querySelector('main').classList.add('transition-all', 'duration-700');
+            }, 400);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Crypto-Pay | Scanner &amp; Paiement</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#c6c6c7",
+                    "primary-container": "#e2e2e2",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary": "#68000a",
+                    "secondary": "#4de082",
+                    "secondary-fixed": "#6dfe9c",
+                    "outline-variant": "#444748",
+                    "on-primary-container": "#636565",
+                    "tertiary-container": "#ffdad7",
+                    "error-container": "#93000a",
+                    "on-primary": "#2f3131",
+                    "tertiary-fixed-dim": "#ffb3ad",
+                    "surface-dim": "#131313",
+                    "secondary-fixed-dim": "#4de082",
+                    "inverse-on-surface": "#303030",
+                    "surface": "#131313",
+                    "surface-container-high": "#2a2a2a",
+                    "on-error": "#690005",
+                    "primary": "#ffffff",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-secondary-container": "#003e1c",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed-variant": "#930013",
+                    "on-tertiary-container": "#c22229",
+                    "tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#005227",
+                    "on-surface": "#e2e2e2",
+                    "surface-bright": "#393939",
+                    "inverse-surface": "#e2e2e2",
+                    "on-secondary": "#003919",
+                    "on-tertiary-fixed": "#410004",
+                    "surface-container-low": "#1b1b1b",
+                    "on-primary-fixed-variant": "#454747",
+                    "surface-container": "#1f1f1f",
+                    "on-primary-fixed": "#1a1c1c",
+                    "on-error-container": "#ffdad6",
+                    "background": "#131313",
+                    "secondary-container": "#00b55d",
+                    "outline": "#8e9192",
+                    "primary-fixed": "#e2e2e2",
+                    "surface-variant": "#353535",
+                    "inverse-primary": "#5d5f5f",
+                    "on-secondary-fixed": "#00210c",
+                    "on-background": "#e2e2e2",
+                    "on-surface-variant": "#c4c7c8",
+                    "surface-tint": "#c6c6c7",
+                    "surface-container-highest": "#353535"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "24px",
+                    "gutter": "16px",
+                    "stack-sm": "8px",
+                    "safe-area-bottom": "34px",
+                    "stack-md": "16px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "mono-data": ["Geist"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Geist"],
+                    "display-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .scanner-frame {
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6);
+        }
+        .nfc-wave {
+            animation: wave 3s infinite linear;
+        }
+        @keyframes wave {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        .scanning-line {
+            animation: scan 2.5s infinite ease-in-out;
+        }
+        @keyframes scan {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(240px); }
+        }
+        .bluetooth-pulse {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen font-body-md text-on-background">
+<!-- Top Navigation Header -->
+<header class="fixed top-0 left-0 right-0 z-[60] flex justify-between items-center px-margin-page pt-stack-md w-full max-w-[480px] mx-auto bg-transparent">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Bonjour, Jean 👋</h1>
+<div class="flex items-center gap-stack-md">
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">notifications</button>
+<div class="w-10 h-10 rounded-full border border-white/10 overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A sophisticated close-up portrait of a professional man with a minimalist background. The lighting is dramatic and high-contrast, mimicking a luxury editorial style. Deep blacks and clean highlights dominate the frame, reflecting a premium aesthetic that aligns with a high-end financial mobile application environment. The overall mood is serious, trustworthy, and modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmJjceiB_U5OvbYGqDVhvEY9C9GUHISbY7wC-o5Ldd05N9m-M2aKwNfpfKiGxbVcKX5TmJfzWdLQDzdy9AT6R_3297bAucqhUXnUqSZ-tfSAKmhYGQPGNdm6OG10DgW8FnvaY8Bo_iIB9WPFCLjHfsyVCHn-9Qw0HgMf8mhc2OY7sNr5cg7rIDFS71julGM_Fhsd4K-NVY4eFlP_A2Owa5bW88b9mlL1ANxOSSi8nq1nWwiHrq7hzqpbKUsQKZeY0qs3hGwHZLrB8"/>
+</div>
+</div>
+</header>
+<!-- Main Viewport Container (Centered for Handheld-first) -->
+<main class="flex-1 w-full max-w-[480px] mx-auto px-margin-page pt-[100px] pb-[120px]">
+<!-- Scanner Canvas Section -->
+<section class="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/10 mb-stack-lg group">
+<!-- Simulated Camera Background -->
+<div class="absolute inset-0 bg-neutral-900 overflow-hidden">
+<img alt="Scanner Background" class="w-full h-full object-cover opacity-60" data-alt="A crisp digital circuit board background with neon cybernetic details and glowing lines. The style is ultra-high definition with shallow depth of field, focused on metallic textures and intricate technological patterns. Dark void-black background with subtle teal and white luminous highlights to suggest a high-security cryptographic atmosphere for a mobile scanning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6D3HKez-Y78cnOjVmuQ9pjBZBkPfc3hFDwqu9pqMKtcki7O2qTJ-CfFa6WW_3aIENZefiMkyArCNp7CdR5eufn6ScpyIDPHg2djdScPiKuFcwE9ABzryQLpLUqCoeBljW5hXkYs2JwpvM1z3pckghLZcpxZgq3tscowkPNfLbvze6iX8Vzd5qISm-H4nIhrbwxPkjX6zNA9nSlXaTgAQqAWWBDW_tTYVD_vxpnJtjv5RT2UQK1_1_Orv0dQlD3HEG6KYb4d8Iws"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+</div>
+<!-- Scanner Frame Overlay -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="relative w-64 h-64 border-2 border-white/40 rounded-lg scanner-frame">
+<!-- Corner Brackets -->
+<div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-sm"></div>
+<div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-sm"></div>
+<div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-sm"></div>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-sm"></div>
+<!-- Scanning Line -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary to-transparent scanning-line shadow-[0_0_15px_rgba(77,224,130,0.8)]"></div>
+</div>
+</div>
+<!-- Scanner Overlay UI -->
+<div class="absolute bottom-gutter left-gutter right-gutter flex justify-between items-center text-white/60">
+<button class="liquid-glass w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined">flash_on</span>
+</button>
+<p class="font-label-sm text-label-sm tracking-widest uppercase">Scanner QR Code</p>
+<button class="liquid-glass w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined">photo_library</span>
+</button>
+</div>
+</section>
+<!-- Payment Methods - Liquid Glass Bento Grid -->
+<div class="grid grid-cols-2 gap-gutter mb-stack-lg">
+<!-- NFC Card -->
+<div class="liquid-glass rounded-lg p-stack-md flex flex-col items-center justify-center text-center overflow-hidden h-[180px] relative">
+<div class="relative w-16 h-16 mb-stack-md flex items-center justify-center">
+<div class="absolute inset-0 border border-secondary rounded-full nfc-wave"></div>
+<div class="absolute inset-0 border border-secondary rounded-full nfc-wave" style="animation-delay: 1s;"></div>
+<span class="material-symbols-outlined text-secondary text-4xl">contactless</span>
+</div>
+<h3 class="font-label-sm text-label-sm font-semibold mb-1">Paiement NFC</h3>
+<p class="text-[10px] text-white/40 uppercase tracking-tighter">Approchez les appareils</p>
+</div>
+<!-- Bluetooth Card -->
+<div class="liquid-glass rounded-lg p-stack-md flex flex-col items-center justify-center text-center h-[180px]">
+<div class="w-16 h-16 mb-stack-md flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl bluetooth-pulse">bluetooth</span>
+</div>
+<h3 class="font-label-sm text-label-sm font-semibold mb-1">Paiement Bluetooth</h3>
+<p class="text-[10px] text-white/40 uppercase tracking-tighter">Recherche d'appareils...</p>
+<!-- Simulated searching items -->
+<div class="mt-stack-sm flex gap-1">
+<div class="w-1 h-1 bg-white/20 rounded-full"></div>
+<div class="w-1 h-1 bg-white/40 rounded-full"></div>
+<div class="w-1 h-1 bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Lightning Address Input Section -->
+<section class="liquid-glass rounded-lg p-stack-md mb-stack-lg">
+<label class="font-label-sm text-label-sm text-white/40 block mb-stack-sm ml-1">Adresse ou Invoice Lightning</label>
+<div class="relative flex items-center">
+<input class="w-full bg-black/40 border border-white/10 rounded-lg px-gutter py-stack-md text-white font-mono-data text-mono-data placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors" placeholder="username@wallet.me ou lnurl..." type="text"/>
+<button class="absolute right-stack-sm bg-primary text-black rounded-full p-1 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+<div class="mt-stack-sm flex items-center gap-2 px-1">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+<span class="font-label-sm text-[11px] text-secondary">Lightning Network Actif</span>
+</div>
+</section>
+</main>
+<!-- Navigation Shell -->
+<nav class="fixed bottom-stack-lg left-0 right-0 z-50 flex justify-around items-center py-stack-sm px-gutter max-w-[432px] mx-auto bg-white/10 backdrop-blur-[40px] border border-white/10 rounded-lg shadow-[0px_20px_40px_rgba(0,0,0,0.4)]">
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:bg-white/20 transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</a>
+<!-- Active Tab: Search/Pay -->
+<a class="flex items-center justify-center bg-white text-black rounded-full w-12 h-12 active:scale-90 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:bg-white/20 transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:bg-white/20 transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</a>
+</nav>
+<!-- Atmospheric Glow Background -->
+<div class="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/5 blur-[120px] rounded-full -z-10"></div>
+<div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/5 blur-[120px] rounded-full -z-10"></div>
+<script>
+        // Micro-interaction for the search icon specifically
+        const searchBtn = document.querySelector('[data-icon="search"]').parentElement;
+        searchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Pulse effect on click
+            searchBtn.classList.add('scale-95');
+            setTimeout(() => searchBtn.classList.remove('scale-95'), 150);
+        });
+
+        // Simple mock scan success detection
+        document.querySelector('.scanner-frame').addEventListener('mouseenter', () => {
+           console.log("Scanner active...");
+        });
+    </script>
+</body></html>

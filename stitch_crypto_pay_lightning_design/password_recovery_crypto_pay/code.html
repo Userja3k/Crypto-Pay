@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(77, 224, 130, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#c6c6c7",
+                        "secondary-fixed": "#6dfe9c",
+                        "on-tertiary-fixed": "#410004",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary-container": "#c22229",
+                        "surface-dim": "#131313",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-variant": "#353535",
+                        "primary": "#ffffff",
+                        "error": "#ffb4ab",
+                        "primary-container": "#e2e2e2",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "secondary-fixed-dim": "#4de082",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "on-secondary": "#003919",
+                        "inverse-on-surface": "#303030",
+                        "background": "#131313",
+                        "on-secondary-fixed": "#00210c",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "surface": "#131313",
+                        "tertiary": "#ffffff",
+                        "surface-container-highest": "#353535",
+                        "outline-variant": "#444748",
+                        "tertiary-container": "#ffdad7",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-surface-variant": "#c4c7c8",
+                        "surface-bright": "#393939",
+                        "on-primary": "#2f3131",
+                        "on-tertiary": "#68000a",
+                        "on-surface": "#e2e2e2",
+                        "outline": "#8e9192",
+                        "secondary-container": "#00b55d",
+                        "on-background": "#e2e2e2",
+                        "inverse-surface": "#e2e2e2",
+                        "inverse-primary": "#5d5f5f",
+                        "surface-container-low": "#1b1b1b",
+                        "on-primary-fixed-variant": "#454747",
+                        "surface-container": "#1f1f1f",
+                        "on-primary-container": "#636565",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#1a1c1c",
+                        "surface-container-high": "#2a2a2a",
+                        "on-secondary-container": "#003e1c",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "on-secondary-fixed-variant": "#005227",
+                        "secondary": "#4de082"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-page": "24px",
+                        "gutter": "16px",
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "safe-area-bottom": "34px"
+                    },
+                    "fontFamily": {
+                        "mono-data": ["Geist"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "label-sm": ["Geist"],
+                        "display-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface bg-background">
+<!-- Atmospheric Background Effects -->
+<div class="bg-glow top-[-100px] left-[-100px]"></div>
+<div class="bg-glow bottom-[-100px] right-[-100px]" style="background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0) 70%);"></div>
+<!-- Navigation Shell (Transactional Filter applied: TopAppBar leading icon only, no BottomNavBar) -->
+<header class="w-full top-0 sticky backdrop-blur-xl border-b border-white/10 shadow-[0px_20px_40px_rgba(0,0,0,0.4)] z-50">
+<div class="flex justify-between items-center px-margin-page h-16 w-full max-w-[480px] mx-auto">
+<a class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</a>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Crypto-Pay</span>
+<div class="w-6"></div> <!-- Spacer for center alignment -->
+</div>
+</header>
+<main class="max-w-[480px] mx-auto px-margin-page pt-stack-lg pb-safe-area-bottom min-h-[calc(100vh-64px)] flex flex-col justify-center">
+<!-- Visual Anchor -->
+<div class="mb-stack-lg relative flex justify-center">
+<div class="w-24 h-24 rounded-xl liquid-glass flex items-center justify-center relative z-10 overflow-hidden" style="animation: float 6s ease-in-out infinite;">
+<span class="material-symbols-outlined text-secondary text-5xl" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<!-- Internal glow overlay -->
+<div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none"></div>
+</div>
+<!-- Decorative shadow -->
+<div class="absolute top-8 w-20 h-8 bg-secondary/20 blur-2xl rounded-full"></div>
+</div>
+<!-- Header Section -->
+<div class="text-center mb-stack-lg">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-stack-sm">Récupération</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[300px] mx-auto">
+                Entrez votre email pour recevoir un code de réinitialisation.
+            </p>
+</div>
+<!-- Form Section -->
+<form class="space-y-stack-md" id="recoveryForm">
+<div class="group">
+<label class="block font-label-sm text-label-sm text-on-surface-variant ml-4 mb-2">Email</label>
+<div class="relative">
+<input class="w-full glass-input rounded-lg h-14 px-6 font-body-md text-body-md text-primary placeholder:text-white/20" placeholder="nom@exemple.com" required="" type="email"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-secondary text-xl" data-icon="alternate_email">alternate_email</span>
+</div>
+</div>
+</div>
+<div class="pt-stack-sm">
+<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-lg text-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_20px_rgba(255,255,255,0.15)] flex items-center justify-center gap-2 group" type="submit">
+<span>Envoyer le code</span>
+<span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Footer Links -->
+<div class="mt-stack-lg text-center">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-2 group" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="keyboard_backspace">keyboard_backspace</span>
+<span>Retour à la connexion</span>
+</a>
+</div>
+<!-- Security Badge -->
+<div class="mt-auto pt-stack-lg flex justify-center items-center gap-2 opacity-40">
+<span class="material-symbols-outlined text-sm" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-sm text-label-sm">Transaction sécurisée SSL 256-bit</span>
+</div>
+</main>
+<!-- Visual Polish: Decorative Glass Blobs -->
+<div class="fixed top-1/4 right-[-100px] w-64 h-64 liquid-glass rounded-full opacity-20 pointer-events-none blur-3xl"></div>
+<div class="fixed bottom-1/4 left-[-100px] w-48 h-48 liquid-glass rounded-full opacity-10 pointer-events-none blur-3xl"></div>
+<script>
+        // Micro-interactions for form feedback
+        const form = document.getElementById('recoveryForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = form.querySelector('button');
+            const originalContent = btn.innerHTML;
+            
+            // Loading State Animation
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin" data-icon="progress_activity">progress_activity</span>`;
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            setTimeout(() => {
+                btn.innerHTML = `<span class="material-symbols-outlined text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span> <span>Code envoyé !</span>`;
+                btn.classList.remove('opacity-50', 'bg-primary');
+                btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                
+                // Reset form or redirect after success simulation
+                setTimeout(() => {
+                    alert('Un code de vérification a été envoyé à votre adresse email.');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                    btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                    btn.classList.add('bg-primary');
+                }, 2000);
+            }, 1500);
+        });
+
+        // Soft parallax for the glass tile on mouse move (Desktop only)
+        if (window.innerWidth > 768) {
+            document.addEventListener('mousemove', (e) => {
+                const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+                const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+                const glassTile = document.querySelector('.liquid-glass');
+                if (glassTile) {
+                    glassTile.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                }
+            });
+        }
+    </script>
+</body></html>

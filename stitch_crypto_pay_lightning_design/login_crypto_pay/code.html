@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Hanken+Grotesk:wght@600;700&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#c6c6c7",
+                    "secondary-fixed": "#6dfe9c",
+                    "on-tertiary-fixed": "#410004",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-container": "#c22229",
+                    "surface-dim": "#131313",
+                    "primary-fixed": "#e2e2e2",
+                    "surface-variant": "#353535",
+                    "primary": "#ffffff",
+                    "error": "#ffb4ab",
+                    "primary-container": "#e2e2e2",
+                    "tertiary-fixed-dim": "#ffb3ad",
+                    "secondary-fixed-dim": "#4de082",
+                    "primary-fixed-dim": "#c6c6c7",
+                    "on-secondary": "#003919",
+                    "inverse-on-surface": "#303030",
+                    "background": "#131313",
+                    "on-secondary-fixed": "#00210c",
+                    "on-tertiary-fixed-variant": "#930013",
+                    "surface": "#131313",
+                    "tertiary": "#ffffff",
+                    "surface-container-highest": "#353535",
+                    "outline-variant": "#444748",
+                    "tertiary-container": "#ffdad7",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-surface-variant": "#c4c7c8",
+                    "surface-bright": "#393939",
+                    "on-primary": "#2f3131",
+                    "on-tertiary": "#68000a",
+                    "on-surface": "#e2e2e2",
+                    "outline": "#8e9192",
+                    "secondary-container": "#00b55d",
+                    "on-background": "#e2e2e2",
+                    "inverse-surface": "#e2e2e2",
+                    "inverse-primary": "#5d5f5f",
+                    "surface-container-low": "#1b1b1b",
+                    "on-primary-fixed-variant": "#454747",
+                    "surface-container": "#1f1f1f",
+                    "on-primary-container": "#636565",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed": "#1a1c1c",
+                    "surface-container-high": "#2a2a2a",
+                    "on-secondary-container": "#003e1c",
+                    "error-container": "#93000a",
+                    "on-error": "#690005",
+                    "on-secondary-fixed-variant": "#005227",
+                    "secondary": "#4de082"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "24px",
+                    "gutter": "16px",
+                    "stack-lg": "32px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "safe-area-bottom": "34px"
+            },
+            "fontFamily": {
+                    "mono-data": ["Geist"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-sm": ["Geist"],
+                    "display-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .luminous-glow {
+            box-shadow: 0 0 40px rgba(77, 224, 130, 0.15);
+        }
+
+        .lightning-blur {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(77, 224, 130, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            filter: blur(60px);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex items-center justify-center min-h-screen p-margin-page">
+<!-- Atmospheric Background Effects -->
+<div class="lightning-blur top-[-100px] right-[-50px]"></div>
+<div class="lightning-blur bottom-[-100px] left-[-50px]"></div>
+<main class="w-full max-w-[480px] flex flex-col items-center">
+<!-- Branding Icon Section -->
+<div class="mb-stack-lg animate-pulse">
+<div class="w-16 h-16 rounded-full glass-panel flex items-center justify-center text-secondary border-secondary/30 border-2">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+</div>
+<!-- Header -->
+<header class="text-center mb-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Bon retour</h1>
+<p class="font-body-md text-on-surface-variant/80">Accédez à votre portefeuille sécurisé</p>
+</header>
+<!-- Login Form -->
+<form class="w-full space-y-stack-md" onsubmit="event.preventDefault()">
+<!-- Email Field -->
+<div class="space-y-2">
+<div class="glass-panel rounded-lg px-5 py-4 flex items-center transition-all duration-300 focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+<span class="material-symbols-outlined text-on-surface-variant mr-3">mail</span>
+<input class="bg-transparent border-none p-0 w-full font-body-md text-primary placeholder:text-white/40 focus:ring-0" placeholder="Email" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="glass-panel rounded-lg px-5 py-4 flex items-center transition-all duration-300 focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+<span class="material-symbols-outlined text-on-surface-variant mr-3">lock</span>
+<input class="bg-transparent border-none p-0 w-full font-body-md text-primary placeholder:text-white/40 focus:ring-0" placeholder="Mot de passe" type="password"/>
+<button class="text-on-surface-variant hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+<div class="flex justify-end">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Mot de passe oublié?</a>
+</div>
+</div>
+<!-- Primary Action -->
+<div class="pt-4 flex flex-col gap-gutter">
+<button class="w-full bg-primary text-on-primary font-headline-lg-mobile text-[18px] py-4 rounded-full active:scale-95 transition-transform shadow-[0_10px_30px_rgba(255,255,255,0.2)]">
+                    Connexion
+                </button>
+<div class="flex items-center gap-4 py-2">
+<div class="h-[1px] flex-1 bg-white/10"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant/40">OU</span>
+<div class="h-[1px] flex-1 bg-white/10"></div>
+</div>
+<!-- Biometric Login -->
+<button class="glass-panel w-full py-4 rounded-full flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-white/10 group" type="button">
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">fingerprint</span>
+<span class="font-body-md text-primary">Utiliser Face ID</span>
+</button>
+</div>
+</form>
+<!-- Footer Link -->
+<footer class="mt-stack-lg">
+<p class="font-body-md text-on-surface-variant">
+                Pas encore de compte ? 
+                <a class="text-secondary font-semibold hover:underline decoration-secondary/30 underline-offset-4" href="#">Créer un compte</a>
+</p>
+</footer>
+<!-- Decorative Card (High-end Detail) -->
+<div class="mt-16 w-full opacity-40">
+<div class="glass-panel p-6 rounded-lg border-secondary/10 flex items-start gap-4">
+<div class="p-2 bg-secondary/10 rounded-full">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h3 class="font-label-sm text-label-sm text-primary mb-1">Sécurité Lightning</h3>
+<p class="text-[12px] font-body-md text-on-surface-variant leading-relaxed">
+                        Votre clé privée ne quitte jamais cet appareil. Authentification chiffrée de bout en bout.
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple micro-interaction for biometric button
+        const bioBtn = document.querySelector('button[type="button"].glass-panel');
+        bioBtn.addEventListener('click', () => {
+            bioBtn.style.borderColor = 'rgba(77, 224, 130, 0.6)';
+            setTimeout(() => {
+                bioBtn.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            }, 600);
+        });
+
+        // Dynamic background movement based on mouse
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            const blurs = document.querySelectorAll('.lightning-blur');
+            blurs.forEach((blur, index) => {
+                const speed = (index + 1) * 20;
+                blur.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+    </script>
+</body></html>

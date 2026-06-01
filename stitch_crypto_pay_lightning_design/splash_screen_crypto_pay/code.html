@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Crypto-Pay | Secure Bitcoin Finance</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#c6c6c7",
+                    "secondary-fixed": "#6dfe9c",
+                    "on-tertiary-fixed": "#410004",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-container": "#c22229",
+                    "surface-dim": "#131313",
+                    "primary-fixed": "#e2e2e2",
+                    "surface-variant": "#353535",
+                    "primary": "#ffffff",
+                    "error": "#ffb4ab",
+                    "primary-container": "#e2e2e2",
+                    "tertiary-fixed-dim": "#ffb3ad",
+                    "secondary-fixed-dim": "#4de082",
+                    "primary-fixed-dim": "#c6c6c7",
+                    "on-secondary": "#003919",
+                    "inverse-on-surface": "#303030",
+                    "background": "#131313",
+                    "on-secondary-fixed": "#00210c",
+                    "on-tertiary-fixed-variant": "#930013",
+                    "surface": "#131313",
+                    "tertiary": "#ffffff",
+                    "surface-container-highest": "#353535",
+                    "outline-variant": "#444748",
+                    "tertiary-container": "#ffdad7",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-surface-variant": "#c4c7c8",
+                    "surface-bright": "#393939",
+                    "on-primary": "#2f3131",
+                    "on-tertiary": "#68000a",
+                    "on-surface": "#e2e2e2",
+                    "outline": "#8e9192",
+                    "secondary-container": "#00b55d",
+                    "on-background": "#e2e2e2",
+                    "inverse-surface": "#e2e2e2",
+                    "inverse-primary": "#5d5f5f",
+                    "surface-container-low": "#1b1b1b",
+                    "on-primary-fixed-variant": "#454747",
+                    "surface-container": "#1f1f1f",
+                    "on-primary-container": "#636565",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed": "#1a1c1c",
+                    "surface-container-high": "#2a2a2a",
+                    "on-secondary-container": "#003e1c",
+                    "error-container": "#93000a",
+                    "on-error": "#690005",
+                    "on-secondary-fixed-variant": "#005227",
+                    "secondary": "#4de082"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "24px",
+                    "gutter": "16px",
+                    "stack-lg": "32px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "safe-area-bottom": "34px"
+            },
+            "fontFamily": {
+                    "mono-data": ["Geist"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-sm": ["Geist"],
+                    "display-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .liquid-glass {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0px 20px 40px rgba(0,0,0,0.4), inset 0px 1px 2px rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* The Shimmer Effect */
+        .liquid-glass::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 45%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 55%
+            );
+            animation: shimmer 4s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-30%, -30%); }
+            100% { transform: translate(30%, 30%); }
+        }
+
+        .logo-text {
+            color: #ffffff;
+            z-index: 10;
+            letter-spacing: -0.05em;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .glow-pulse {
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 2px rgba(255,255,255,0.1)); }
+            to { filter: drop-shadow(0 0 12px rgba(255,255,255,0.4)); }
+        }
+
+        .stagger-1 { animation-delay: 0.2s; }
+        .stagger-2 { animation-delay: 0.4s; }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="dark bg-black text-on-background antialiased">
+
+    <!-- Center Content -->
+    <main class="flex flex-col items-center gap-stack-lg max-w-[480px] w-full px-margin-page">
+        
+        <!-- Logo Container -->
+        <div class="fade-in-up">
+            <div class="liquid-glass glow-pulse">
+                <div class="logo-text font-display-lg text-display-lg flex items-center">
+                    <span class="material-symbols-outlined !text-[48px] text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Brand Name -->
+        <div class="fade-in-up stagger-1 text-center">
+            <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">
+                Crypto-Pay
+            </h1>
+            <p class="font-label-sm text-label-sm text-on-surface-variant/60 mt-stack-sm tracking-[0.2em] uppercase">
+                Liquid Assets
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Bottom Branding -->
+    <footer class="fixed bottom-safe-area-bottom w-full px-margin-page flex flex-col items-center gap-2 fade-in-up stagger-2">
+        <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+            <span class="material-symbols-outlined text-secondary text-[16px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+            <span class="font-label-sm text-label-sm text-secondary">Secured by Bitcoin</span>
+        </div>
+        
+        <p class="font-mono-data text-[10px] text-on-surface-variant/40 mt-4 tracking-wider">
+            Tous droits réservés © 2026
+        </p>
+    </footer>
+
+    <!-- Background Atmospheric Elements (Subtle Orbs) -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-secondary/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <script>
+        // Simple micro-interaction for the logo on mouse move (Desktop focus)
+        document.addEventListener('mousemove', (e) => {
+            const glass = document.querySelector('.liquid-glass');
+            if (!glass) return;
+            
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            
+            glass.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        // Reset transform on mouse leave
+        document.addEventListener('mouseleave', () => {
+            const glass = document.querySelector('.liquid-glass');
+            if (glass) glass.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+    </script>
+
+</body>
+</html></style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body></body></html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<title>Crypto-Pay | Sécurité</title>
+<style>
+        body {
+            background-color: #000000;
+            color: #e2e2e2;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-surface {
+            backdrop-filter: blur(40px);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .glass-border {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .toggle-dot {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input:checked ~ .toggle-bg {
+            background-color: #4de082;
+        }
+        input:checked ~ .toggle-dot {
+            transform: translateX(20px);
+            background-color: #00210c;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#c6c6c7",
+                      "secondary-fixed": "#6dfe9c",
+                      "on-tertiary-fixed": "#410004",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-tertiary-container": "#c22229",
+                      "surface-dim": "#131313",
+                      "primary-fixed": "#e2e2e2",
+                      "surface-variant": "#353535",
+                      "primary": "#ffffff",
+                      "error": "#ffb4ab",
+                      "primary-container": "#e2e2e2",
+                      "tertiary-fixed-dim": "#ffb3ad",
+                      "secondary-fixed-dim": "#4de082",
+                      "primary-fixed-dim": "#c6c6c7",
+                      "on-secondary": "#003919",
+                      "inverse-on-surface": "#303030",
+                      "background": "#131313",
+                      "on-secondary-fixed": "#00210c",
+                      "on-tertiary-fixed-variant": "#930013",
+                      "surface": "#131313",
+                      "tertiary": "#ffffff",
+                      "surface-container-highest": "#353535",
+                      "outline-variant": "#444748",
+                      "tertiary-container": "#ffdad7",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-surface-variant": "#c4c7c8",
+                      "surface-bright": "#393939",
+                      "on-primary": "#2f3131",
+                      "on-tertiary": "#68000a",
+                      "on-surface": "#e2e2e2",
+                      "outline": "#8e9192",
+                      "secondary-container": "#00b55d",
+                      "on-background": "#e2e2e2",
+                      "inverse-surface": "#e2e2e2",
+                      "inverse-primary": "#5d5f5f",
+                      "surface-container-low": "#1b1b1b",
+                      "on-primary-fixed-variant": "#454747",
+                      "surface-container": "#1f1f1f",
+                      "on-primary-container": "#636565",
+                      "on-error-container": "#ffdad6",
+                      "on-primary-fixed": "#1a1c1c",
+                      "surface-container-high": "#2a2a2a",
+                      "on-secondary-container": "#003e1c",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "on-secondary-fixed-variant": "#005227",
+                      "secondary": "#4de082"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-page": "24px",
+                      "gutter": "16px",
+                      "stack-lg": "32px",
+                      "stack-sm": "8px",
+                      "stack-md": "16px",
+                      "safe-area-bottom": "34px"
+              },
+              "fontFamily": {
+                      "mono-data": ["Geist"],
+                      "headline-lg": ["Hanken Grotesk"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["Hanken Grotesk"],
+                      "label-sm": ["Geist"],
+                      "display-lg": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "mono-data": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-black min-h-screen">
+<div class="max-w-[480px] mx-auto min-h-screen flex flex-col relative overflow-hidden">
+<!-- Ambient Background Glow -->
+<div class="absolute top-[-10%] left-[-20%] w-[100%] h-[40%] bg-secondary/10 blur-[120px] rounded-full pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-20%] w-[100%] h-[40%] bg-white/5 blur-[120px] rounded-full pointer-events-none"></div>
+<!-- TopAppBar (From JSON Anchor) -->
+<header class="w-full top-0 sticky backdrop-blur-xl border-b border-white/10 shadow-[0px_20px_40px_rgba(0,0,0,0.4)] z-50 flex justify-between items-center px-margin-page h-16 w-full max-w-[480px] mx-auto">
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Crypto-Pay</h1>
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]">account_circle</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 px-margin-page pt-stack-lg pb-safe-area-bottom">
+<header class="mb-stack-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-1">Sécurité</h2>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-70">Gérez la protection de votre compte et de vos actifs.</p>
+</header>
+<!-- Security Options List -->
+<div class="space-y-gutter">
+<!-- Actionable List Item: Modifier PIN -->
+<div class="glass-surface rounded-lg p-5 flex items-center justify-between group active:scale-[0.98] transition-all duration-300 cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">pin</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Modifier PIN</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Code de sécurité à 6 chiffres</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<!-- Toggle Item: Face ID -->
+<div class="glass-surface rounded-lg p-5 flex items-center justify-between transition-all duration-300">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">face</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Face ID</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Déverrouillage par reconnaissance faciale</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="toggle-bg w-11 h-6 bg-white/20 rounded-full transition-colors"></div>
+<div class="toggle-dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
+</label>
+</div>
+<!-- Toggle Item: Empreinte digitale -->
+<div class="glass-surface rounded-lg p-5 flex items-center justify-between transition-all duration-300">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">fingerprint</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Empreinte digitale</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sécuriser avec Touch ID</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="toggle-bg w-11 h-6 bg-white/20 rounded-full transition-colors"></div>
+<div class="toggle-dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
+</label>
+</div>
+<!-- Status Badge Item: 2FA -->
+<div class="glass-surface rounded-lg p-5 flex items-center justify-between group active:scale-[0.98] transition-all duration-300 cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">vibration</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Authentification à deux facteurs</p>
+<p class="font-label-sm text-label-sm text-secondary font-medium">Activé via SMS</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<!-- Security Visual Asset -->
+<div class="mt-stack-lg rounded-xl overflow-hidden glass-surface p-1">
+<div class="relative h-48 rounded-lg overflow-hidden bg-surface-container-low">
+<img class="w-full h-full object-cover mix-blend-lighten opacity-60" data-alt="A high-fidelity 3D render of a luminous, crystalline lock floating in a dark, ethereal void. The lock is composed of layered glass and glowing silver circuits, reflecting a palette of pure whites and deep emerald greens. Soft, cinematic lighting captures the sharp edges and transparent depth of the security icon, symbolizing absolute protection and liquid liquidity in a modern financial context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBusk2o6Pl2LU4f4beUxOG_6w2WdtYvR9xZx31SkK_YL4HZpc3uByd6bIyqdt81sL0XFC1Q1xqsski2n3QbTLWfHIOGCvwY3o3x9Ymu6-HqbI_EYyNKjxwLR5tbl4fSfqGW_PrplatZLAjRRZWv0mvgeGhES_iLB4fv-Z0yUoJmsARJ0JBeIRwZ08YJQLyVVEVK96GeKAt-AUrcBcqks0IVtv1UjPV7bHW2J31wIt2_xTZ7bh5asX0eE7LYAZtmCQ9f2hUCTu2rYk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+<div>
+<span class="inline-block bg-secondary/20 text-secondary px-3 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-wider mb-2">Statut de Protection</span>
+<p class="font-headline-lg-mobile text-primary text-xl">Niveau de sécurité : Élite</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Action Button -->
+<button class="w-full mt-stack-lg py-4 px-6 rounded-full glass-surface flex items-center justify-center gap-2 font-body-md text-primary font-medium hover:bg-white/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+                Rapport de sécurité complet
+            </button>
+</main>
+<!-- BottomNavBar (Suppressed as per "Destination" Rule for sub-pages, but included here for shell integrity demonstration if user navigates back) -->
+<!-- Note: Navigation shell is suppressed here to prioritize focus on the Security task -->
+</div>
+<script>
+        // Micro-interactions for toggle switches
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const parent = this.closest('.glass-surface');
+                if(this.checked) {
+                    parent.style.borderColor = 'rgba(77, 224, 130, 0.3)';
+                    parent.style.boxShadow = '0 0 20px rgba(77, 224, 130, 0.05)';
+                } else {
+                    parent.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    parent.style.boxShadow = 'none';
+                }
+            });
+        });
+
+        // Click haptics simulation
+        document.querySelectorAll('.active\\:scale-\\[0\\.98\\]').forEach(item => {
+            item.addEventListener('touchstart', () => {
+                if ('vibrate' in navigator) navigator.vibrate(5);
+            });
+        });
+    </script>
+</body></html>
