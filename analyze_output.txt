@@ -1,0 +1,35 @@
+Analyzing app...
+
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/glass_container.dart:33:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/glass_container.dart:36:37 • deprecated_member_use
+warning • Unused import: 'screens/home_screen.dart' • lib/main.dart:6:8 • unused_import
+warning • Unused import: 'screens/login_screen.dart' • lib/main.dart:7:8 • unused_import
+  error • The name 'ProfileScreen' isn't a class • lib/screens/home_screen.dart:50:92 • creation_with_non_type
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/home_screen.dart:126:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/home_screen.dart:152:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/home_screen.dart:223:59 • deprecated_member_use
+warning • Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' • lib/screens/kyc_submission_screen.dart:2:8 • unused_import
+warning • Unused import: '../providers/user_provider.dart' • lib/screens/kyc_submission_screen.dart:6:8 • unused_import
+warning • The value of the field '_isLoading' isn't used • lib/screens/parent_approval_screen.dart:16:8 • unused_field
+warning • The value of the local variable 'userId' isn't used • lib/screens/parent_approval_screen.dart:55:11 • unused_local_variable
+warning • Unused import: '../core/widgets/glass_container.dart' • lib/screens/payment_success_screen.dart:3:8 • unused_import
+warning • Unused import: 'settings_screen.dart' • lib/screens/profile_screen.dart:9:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/profile_screen.dart:97:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/profile_screen.dart:191:31 • deprecated_member_use
+warning • The value of the field '_isLoading' isn't used • lib/screens/receive_payment_screen.dart:18:8 • unused_field
+warning • Unused import: '../providers/user_provider.dart' • lib/screens/referral_screen.dart:6:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/splash_screen.dart:68:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/splash_screen.dart:69:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/splash_screen.dart:72:58 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/splash_screen.dart:86:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/transaction_history_screen.dart:49:66 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/transaction_history_screen.dart:49:96 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/welcome_screen.dart:24:39 • deprecated_member_use
+warning • Unused import: 'package:flutter/material.dart' • test/widget_test.dart:1:8 • unused_import
+warning • Unused import: 'package:crypto_pay_mobile/screens/home_screen.dart' • test/widget_test.dart:3:8 • unused_import
+warning • Unused import: 'package:crypto_pay_mobile/core/theme.dart' • test/widget_test.dart:4:8 • unused_import
+warning • Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' • test/widget_test.dart:5:8 • unused_import
+warning • Unused import: 'package:crypto_pay_mobile/providers/user_provider.dart' • test/widget_test.dart:6:8 • unused_import
+warning • Unused import: 'package:supabase_flutter/supabase_flutter.dart' • test/widget_test.dart:7:8 • unused_import
+
+31 issues found. (ran in 2.3s)

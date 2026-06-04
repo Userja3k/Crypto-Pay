@@ -1,0 +1,28 @@
+name: crypto_pay_mobile
+description: "Crypto-Pay - Le mobile money du Bitcoin"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  supabase_flutter: ^2.6.0
+  google_fonts: ^6.2.1
+  flutter_riverpod: ^2.5.1
+  intl: ^0.19.0
+  flutter_blurhash: ^0.8.2
+  animations: ^2.0.1
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
