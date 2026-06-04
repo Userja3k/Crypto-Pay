@@ -10,6 +10,7 @@ import 'receive_payment_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
 import 'transaction_history_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
