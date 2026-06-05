@@ -62,7 +62,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'Bonjour, Jean 👋',
+              'Bonjour, ${authState.user?['full_name']?.split(' ')[0] ?? 'Utilisateur'} 👋',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24),
             ),
           ],

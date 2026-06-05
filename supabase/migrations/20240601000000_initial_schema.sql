@@ -338,9 +338,15 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 11. confirm_lightning_payment
 CREATE OR REPLACE FUNCTION public.confirm_lightning_payment(p_payment_hash VARCHAR(64), p_preimage VARCHAR(64)) RETURNS BOOLEAN AS $$
+DECLARE v_amount DECIMAL; v_acc_id UUID;
 BEGIN
-    UPDATE public.transactions SET status = 'completed', lightning_preimage = p_preimage, completed_at = NOW() WHERE lightning_payment_hash = p_payment_hash;
-    RETURN FOUND;
+    UPDATE public.transactions SET status = 'completed', lightning_preimage = p_preimage, completed_at = NOW()
+    WHERE lightning_payment_hash = p_payment_hash RETURNING amount_usd, account_id INTO v_amount, v_acc_id;
+    IF FOUND THEN
+        UPDATE public.accounts SET balance_usd = balance_usd + v_amount WHERE id = v_acc_id;
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 12. get_balance
