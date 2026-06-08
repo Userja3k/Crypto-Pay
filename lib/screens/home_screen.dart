@@ -10,6 +10,7 @@ import 'receive_payment_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
 import 'transaction_history_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -61,7 +62,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'Bonjour, Jean 👋',
+              'Bonjour, ${authState.user?['full_name']?.split(' ')[0] ?? 'Utilisateur'} 👋',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24),
             ),
           ],

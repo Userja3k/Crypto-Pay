@@ -18,6 +18,7 @@ dependencies:
   flutter_blurhash: ^0.8.2
   animations: ^2.0.1
   crypto: ^3.0.3
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

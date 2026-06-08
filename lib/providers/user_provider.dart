@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final supabaseClientProvider = Provider((ref) => Supabase.instance.client);
 
@@ -18,13 +20,27 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(AuthState());
+  AuthNotifier() : super(AuthState()) {
+    _loadAuth();
+  }
 
-  void login(Map<String, dynamic> user) {
+  Future<void> _loadAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('auth_user');
+    if (userJson != null) {
+      state = AuthState(user: jsonDecode(userJson), isAuthenticated: true);
+    }
+  }
+
+  Future<void> login(Map<String, dynamic> user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_user', jsonEncode(user));
     state = AuthState(user: user, isAuthenticated: true);
   }
 
-  void logout() {
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_user');
     state = AuthState();
   }
 }

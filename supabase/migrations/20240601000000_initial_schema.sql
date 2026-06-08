@@ -1,5 +1,5 @@
 -- CRYPTO-PAY FULL INITIAL SCHEMA (PUBLIC SCHEMA)
--- Version: 1.2.0
+-- Version: 1.3.0
 -- Date: 2024-06-01
 
 -------------------------------------------------
@@ -338,9 +338,15 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 11. confirm_lightning_payment
 CREATE OR REPLACE FUNCTION public.confirm_lightning_payment(p_payment_hash VARCHAR(64), p_preimage VARCHAR(64)) RETURNS BOOLEAN AS $$
+DECLARE v_amount DECIMAL; v_acc_id UUID;
 BEGIN
-    UPDATE public.transactions SET status = 'completed', lightning_preimage = p_preimage, completed_at = NOW() WHERE lightning_payment_hash = p_payment_hash;
-    RETURN FOUND;
+    UPDATE public.transactions SET status = 'completed', lightning_preimage = p_preimage, completed_at = NOW()
+    WHERE lightning_payment_hash = p_payment_hash RETURNING amount_usd, account_id INTO v_amount, v_acc_id;
+    IF FOUND THEN
+        UPDATE public.accounts SET balance_usd = balance_usd + v_amount WHERE id = v_acc_id;
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 12. get_balance
@@ -578,7 +584,7 @@ END; $$ LANGUAGE plpgsql;
 -- 43. get_db_version
 CREATE OR REPLACE FUNCTION public.get_db_version() RETURNS TEXT AS $$
 BEGIN
-    RETURN 'Crypto-Pay DB v1.2.0';
+    RETURN 'Crypto-Pay DB v1.3.0';
 END; $$ LANGUAGE plpgsql;
 
 -- 44. get_pending_approvals
@@ -604,10 +610,18 @@ ALTER TABLE public.kyc_documents ENABLE ROW LEVEL SECURITY;
 
 -- Note: In a production Supabase app, RLS would use auth.uid().
 -- Since we are using a custom auth table, we would normally use custom claims or session checks.
--- For this bootstrap, we simplify RLS to ALLOW ALL but the Logic is in RPCs.
-CREATE POLICY allow_all ON public.users FOR ALL USING (true);
-CREATE POLICY allow_all ON public.accounts FOR ALL USING (true);
-CREATE POLICY allow_all ON public.transactions FOR ALL USING (true);
-CREATE POLICY allow_all ON public.sessions FOR ALL USING (true);
-CREATE POLICY allow_all ON public.notifications FOR ALL USING (true);
-CREATE POLICY allow_all ON public.kyc_documents FOR ALL USING (true);
+-- For this bootstrap, we simplify RLS to restrict access by user_id where possible.
+
+CREATE POLICY self_select ON public.users FOR SELECT USING (id = auth.uid());
+CREATE POLICY self_update ON public.users FOR UPDATE USING (id = auth.uid());
+
+CREATE POLICY self_account ON public.accounts FOR ALL USING (user_id = auth.uid());
+
+CREATE POLICY self_transactions ON public.transactions FOR SELECT USING (
+    account_id IN (SELECT id FROM public.accounts WHERE user_id = auth.uid())
+);
+
+CREATE POLICY self_notifications ON public.notifications FOR ALL USING (user_id = auth.uid());
+
+CREATE POLICY self_kyc ON public.kyc_documents FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY self_submit_kyc ON public.kyc_documents FOR INSERT WITH CHECK (user_id = auth.uid());
