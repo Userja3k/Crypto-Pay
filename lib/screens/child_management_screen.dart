@@ -80,7 +80,7 @@ class _ChildManagementScreenState extends ConsumerState<ChildManagementScreen> {
               const SizedBox(height: 8),
               const Text('• 50\$ / transaction\n• 100\$ / jour\n• Approbation parentale requise', style: TextStyle(color: Colors.white54, fontSize: 13)),
               const SizedBox(height: 48),
-              _isLoading
+              _isLoading 
                 ? const Center(child: CircularProgressIndicator(color: Colors.white))
                 : GlassButton(onPressed: _handleCreateChild, child: const Text('Générer un Code d\'Invitation')),
             ],

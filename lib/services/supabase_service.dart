@@ -23,7 +23,7 @@ class SupabaseService {
       'p_pin_salt': pinSalt,
       'p_referral_code': referralCode,
     });
-
+    
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -46,7 +46,7 @@ class SupabaseService {
       'p_max_per_day_usd': maxPerDay,
       'p_max_per_month_usd': maxPerMonth,
     });
-
+    
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -68,7 +68,7 @@ class SupabaseService {
       'p_identifier': identifier,
       'p_pin_hash': pinHash,
     });
-
+    
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -107,7 +107,7 @@ class SupabaseService {
       'p_destination_identifier': destinationIdentifier,
       'p_note': note,
     });
-
+    
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -124,7 +124,7 @@ class SupabaseService {
       'p_amount_usd': amountUsd,
       'p_memo': memo,
     });
-
+    
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }

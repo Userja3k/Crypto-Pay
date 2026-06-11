@@ -6,10 +6,10 @@ class LiquidGlassTheme {
   static const Color primary = Color(0xFFFFFFFF);
   static const Color accent = Color(0xFF4ADE80);
   static const Color error = Color(0xFFEF4444);
-
+  
   static const double marginPage = 24.0;
   static const double gutter = 16.0;
-
+  
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,

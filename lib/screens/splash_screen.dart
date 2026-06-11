@@ -4,6 +4,7 @@ import '../core/theme.dart';
 import '../providers/user_provider.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
+import 'dart:math' as math;
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -58,33 +59,59 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white.withOpacity(0.05),
-                    ],
-                  ),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+              // Logo: White circle on black, Bold B inclined 80deg left, "opening" the circle
+              SizedBox(
+                width: 140,
+                height: 140,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Transform.translate(
+                      offset: const Offset(-10, 0), // Push slightly left to "open" the circle
+                      child: Transform.rotate(
+                        angle: -80 * (math.pi / 180),
+                        child: const Text(
+                          '₿',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 110,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.bolt, size: 60, color: Colors.white),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               Text(
                 'Crypto-Pay',
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'LIQUID ASSETS',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  letterSpacing: 4,
-                  color: Colors.white.withOpacity(0.5),
+                  letterSpacing: 6,
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
+              ),
+              const SizedBox(height: 64),
+              const Text(
+                'Tous droits réservés',
+                style: TextStyle(color: Colors.white24, fontSize: 10, letterSpacing: 1),
               ),
             ],
           ),

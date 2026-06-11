@@ -340,7 +340,7 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.confirm_lightning_payment(p_payment_hash VARCHAR(64), p_preimage VARCHAR(64)) RETURNS BOOLEAN AS $$
 DECLARE v_amount DECIMAL; v_acc_id UUID;
 BEGIN
-    UPDATE public.transactions SET status = 'completed', lightning_preimage = p_preimage, completed_at = NOW()
+    UPDATE public.transactions SET status = 'completed', lightning_preimage = p_preimage, completed_at = NOW() 
     WHERE lightning_payment_hash = p_payment_hash RETURNING amount_usd, account_id INTO v_amount, v_acc_id;
     IF FOUND THEN
         UPDATE public.accounts SET balance_usd = balance_usd + v_amount WHERE id = v_acc_id;
@@ -608,7 +608,7 @@ ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kyc_documents ENABLE ROW LEVEL SECURITY;
 
--- Note: In a production Supabase app, RLS would use auth.uid().
+-- Note: In a production Supabase app, RLS would use auth.uid(). 
 -- Since we are using a custom auth table, we would normally use custom claims or session checks.
 -- For this bootstrap, we simplify RLS to restrict access by user_id where possible.
 

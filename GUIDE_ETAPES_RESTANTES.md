@@ -5,36 +5,36 @@ Ce document t'explique simplement ce qu'il reste à faire pour que ton applicati
 ---
 
 ## 1. Le "Pont" vers Bitcoin (Intégration LND) ⚡
-**C'est quoi ?**
+**C'est quoi ?** 
 Ton application est comme une télécommande, mais il faut la brancher à la télévision (le réseau Bitcoin). Le nœud LND est ton récepteur Bitcoin.
 
 **Ce que tu dois faire :**
 - **Avoir un nœud Lightning** : Tu peux en louer un (Voltage, Umbrel, ou un VPS).
-- **Récupérer 3 infos** :
+- **Récupérer 3 infos** : 
   1. L'adresse IP de ton nœud.
   2. Le fichier `tls.cert` (le certificat de sécurité).
   3. Le fichier `admin.macaroon` (ta clé d'autorisation).
 
-**Ce que j'ai fait :**
+**Ce que j'ai fait :** 
 J'ai préparé le code (Edge Function) dans `supabase/functions/lnd-integration/` qui utilise ces 3 infos pour envoyer les ordres de paiement.
 
 ---
 
 ## 2. L'Horloge des Prix (Oracle de Taux) 📈
-**C'est quoi ?**
+**C'est quoi ?** 
 Le prix du Bitcoin change toutes les secondes. Il faut que ton application sache à chaque instant que 1$ = X satoshis.
 
 **Ce que tu dois faire :**
 - Rien de spécial, juste activer le script que j'ai préparé.
 - (Optionnel) Créer un compte gratuit sur CoinGecko pour avoir une clé API plus rapide.
 
-**Ce que j'ai fait :**
+**Ce que j'ai fait :** 
 Un script dans `supabase/functions/price-oracle/` qui va chercher le prix sur internet et met à jour ta base de données automatiquement.
 
 ---
 
 ## 3. Le Coffre-Fort (Stockage KYC) 🔐
-**C'est quoi ?**
+**C'est quoi ?** 
 Quand un utilisateur envoie sa carte d'identité, la photo doit être stockée quelque part en sécurité.
 
 **Ce que tu dois faire :**
@@ -46,7 +46,7 @@ Quand un utilisateur envoie sa carte d'identité, la photo doit être stockée q
 ---
 
 ## 4. Les Alertes (Notifications FCM) 🔔
-**C'est quoi ?**
+**C'est quoi ?** 
 Prévenir l'utilisateur quand il reçoit de l'argent, même si l'application est fermée.
 
 **Ce que tu dois faire :**
@@ -58,7 +58,7 @@ Prévenir l'utilisateur quand il reçoit de l'argent, même si l'application est
 ---
 
 ## 5. Le Grand Lancement (Production & Mainnet) 🌍
-**C'est quoi ?**
+**C'est quoi ?** 
 Quitter le mode "Test" pour utiliser de l'argent réel.
 
 **Ce que tu dois faire :**

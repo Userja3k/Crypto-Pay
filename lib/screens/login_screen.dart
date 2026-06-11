@@ -26,7 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final service = ref.read(supabaseServiceProvider);
       final salt = await service.getUserSalt(_identifierController.text);
-
+      
       final result = await service.verifyLogin(
         identifier: _identifierController.text,
         pinHash: SecurityUtils.hashPin(_pinController.text, salt: salt ?? ''),

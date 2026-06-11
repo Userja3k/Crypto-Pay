@@ -36,7 +36,7 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
     try {
       final authState = ref.read(authProvider);
       final service = ref.read(supabaseServiceProvider);
-
+      
       final result = await service.sendPayment(
         senderUserId: authState.user?['user_id'] ?? '',
         amountUsd: amount,
@@ -82,7 +82,7 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
               const SizedBox(height: 16),
               _buildInput('Note (Optionnel)', _noteController),
               const SizedBox(height: 48),
-              _isLoading
+              _isLoading 
                 ? const CircularProgressIndicator(color: Colors.white)
                 : GlassButton(onPressed: _handleSend, child: const Text('Confirmer le Paiement', style: TextStyle(fontWeight: FontWeight.bold))),
             ],

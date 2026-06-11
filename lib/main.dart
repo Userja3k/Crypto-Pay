@@ -8,7 +8,7 @@ import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   // Initialize Supabase (Using placeholders, user will need to provide real values)
   await Supabase.initialize(
     url: 'https://placeholder.supabase.co',
