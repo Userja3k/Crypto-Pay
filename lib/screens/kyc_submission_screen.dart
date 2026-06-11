@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
-import '../providers/user_provider.dart';
 
 class KycSubmissionScreen extends StatefulWidget {
   const KycSubmissionScreen({super.key});
@@ -62,12 +60,14 @@ class _KycSubmissionScreenState extends State<KycSubmissionScreen> {
   Widget _buildUploadPlaceholder() {
     return GlassContainer(
       padding: const EdgeInsets.all(48),
-      child: const Column(
-        children: [
-          Icon(Icons.cloud_upload_outlined, size: 48, color: Colors.white54),
-          SizedBox(height: 16),
-          Text('Cliquez pour prendre une photo', style: TextStyle(color: Colors.white70)),
-        ],
+      child: const Center(
+        child: Column(
+          children: [
+            Icon(Icons.cloud_upload_outlined, size: 48, color: Colors.white54),
+            SizedBox(height: 16),
+            Text('Cliquez pour prendre une photo', style: TextStyle(color: Colors.white70)),
+          ],
+        ),
       ),
     );
   }

@@ -21,7 +21,7 @@ class WelcomeScreen extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   border: Border.all(color: Colors.white24),
                 ),
                 child: const Icon(Icons.bolt, size: 40, color: Colors.white),

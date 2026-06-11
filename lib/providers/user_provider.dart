@@ -51,3 +51,13 @@ final userBalanceProvider = FutureProvider.family<Map<String, dynamic>, String>(
   final service = ref.watch(supabaseServiceProvider);
   return service.getBalance(userId);
 });
+
+final transactionHistoryProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) async {
+  final service = ref.watch(supabaseServiceProvider);
+  return service.getTransactionHistory(userId);
+});
+
+final pendingApprovalsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, parentUserId) async {
+  final service = ref.watch(supabaseServiceProvider);
+  return service.getPendingApprovals(parentUserId);
+});

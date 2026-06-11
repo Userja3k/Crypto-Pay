@@ -4,10 +4,9 @@ import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../core/utils/security_utils.dart';
+import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
 import 'home_screen.dart';
-import 'register_screen.dart';
-import 'password_recovery_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -23,26 +22,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleLogin() async {
     setState(() => _isLoading = true);
+    HapticService.selection();
+
     try {
-      final service = ref.read(supabaseServiceProvider);
-      final salt = await service.getUserSalt(_identifierController.text);
-      
-      final result = await service.verifyLogin(
-        identifier: _identifierController.text,
-        pinHash: SecurityUtils.hashPin(_pinController.text, salt: salt ?? ''),
+      final identifier = _identifierController.text.trim();
+      final pin = _pinController.text.trim();
+
+      // 1. Get Salt
+      final salt = await ref.read(supabaseServiceProvider).getUserSalt(identifier);
+      if (salt == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Utilisateur non trouvé')),
+          );
+        }
+        return;
+      }
+
+      // 2. Hash PIN
+      final pinHash = SecurityUtils.hashPin(pin, salt: salt);
+
+      // 3. Verify Login
+      final result = await ref.read(supabaseServiceProvider).verifyLogin(
+        identifier: identifier,
+        pinHash: pinHash,
       );
 
       if (result['is_valid'] == true) {
+        HapticService.success();
+        // Update Auth State
         ref.read(authProvider.notifier).login(result);
+
         if (mounted) {
-          Navigator.of(context).pushReplacement(
+          Navigator.pushReplacement(
+            context,
             MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result['message'] ?? 'Échec de la connexion')),
+            SnackBar(content: Text('Erreur: ${result['message']}')),
           );
         }
       }
@@ -61,52 +81,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-              Text(
-                'Bon retour,',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              Text(
-                'Connectez-vous à votre compte',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
-              ),
-              const SizedBox(height: 48),
-              _buildTextField('Email ou Téléphone', Icons.person_outline, _identifierController),
-              const SizedBox(height: 16),
-              _buildTextField('PIN (6 chiffres)', Icons.lock_outline, _pinController, isPassword: true),
+              const SizedBox(height: 64),
+              Text('Bon retour', style: Theme.of(context).textTheme.displayLarge),
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PasswordRecoveryScreen()));
-                  },
-                  child: const Text('PIN oublié ?', style: TextStyle(color: LiquidGlassTheme.accent)),
-                ),
-              ),
-              const Spacer(),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                  : GlassButton(
-                      onPressed: _handleLogin,
-                      child: const Text('Se connecter', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
+              const Text('Connectez-vous pour accéder à vos fonds.', style: TextStyle(color: Colors.white60)),
+              const SizedBox(height: 48),
+              _buildTextField('Email ou Téléphone', _identifierController, icon: Icons.person_outline),
               const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                    );
-                  },
-                  child: const Text('Pas encore de compte ? S\'inscrire', style: TextStyle(color: Colors.white70)),
+              _buildTextField('Code PIN', _pinController, icon: Icons.lock_outline, obscureText: true, keyboardType: TextInputType.number),
+              const SizedBox(height: 32),
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent))
+              else
+                GlassButton(
+                  onPressed: _handleLogin,
+                  child: const Text('Se connecter'),
                 ),
-              ),
             ],
           ),
         ),
@@ -114,20 +109,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool isPassword = false}) {
+  Widget _buildTextField(String label, TextEditingController controller, {IconData? icon, bool obscureText = false, TextInputType? keyboardType}) {
     return GlassContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       borderRadius: 16,
-      opacity: 0.05,
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white38),
-          icon: Icon(icon, color: Colors.white38),
+          labelStyle: const TextStyle(color: Colors.white60),
           border: InputBorder.none,
+          icon: icon != null ? Icon(icon, color: LiquidGlassTheme.accent) : null,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
         ),
       ),
     );
