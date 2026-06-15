@@ -19,33 +19,18 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _reflectionController;
-
-  @override
-  void initState() {
-    super.initState();
-    _reflectionController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _reflectionController.dispose();
-    super.dispose();
-  }
-
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final userName = user?['full_name']?.split(' ')[0] ?? 'Jean';
 
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Orbs
+            // Background Orbs for premium visual feel
             Positioned(
               top: -100,
               left: -100,
@@ -56,7 +41,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   color: Colors.white.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
-                child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100), child: Container()),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                  child: Container(),
+                ),
               ),
             ),
 
@@ -68,15 +56,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(context, authState),
-                  const SizedBox(height: 32),
+                  _buildHeader(context, userName),
+                  const SizedBox(height: 28),
                   _buildBalanceCard(context, authState),
-                  const SizedBox(height: 16),
-                  _buildLightningStatus(),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
                   _buildQuickActions(context),
-                  const SizedBox(height: 32),
-                  _buildStatsCard(context),
+                  const SizedBox(height: 36),
+                  _buildRecentTransactions(context, authState),
                   const SizedBox(height: 120), // Bottom nav space
                 ],
               ),
@@ -94,60 +80,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildHeader(BuildContext context, AuthState authState) {
+  Widget _buildHeader(BuildContext context, String userName) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () {
-                HapticService.selection();
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-              },
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white12),
-                  image: const DecorationImage(
-                    image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
             Text(
-              'Bonjour, ${authState.user?['full_name']?.split(' ')[0] ?? 'Jean'} 👋',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24),
+              'Bonjour $userName',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),
-        Stack(
-          children: [
-            IconButton(
-              onPressed: () => HapticService.selection(),
-              icon: const Icon(Icons.notifications_outlined, size: 28),
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF3B30),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 2),
-                ),
-                child: const Center(
-                  child: Text('3', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-                ),
+        GestureDetector(
+          onTap: () {
+            HapticService.selection();
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white12),
+              image: const DecorationImage(
+                image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
+                fit: BoxFit.cover,
               ),
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -155,86 +120,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
   Widget _buildBalanceCard(BuildContext context, AuthState authState) {
     final userId = authState.user?['user_id'] ?? '';
-    final balanceAsync = ref.watch(userBalanceProvider(userId));
+    final isDemo = userId.startsWith('demo-') || userId.isEmpty;
+    
+    // Set fallback rates/balances for Demo Jean
+    const double demoUsd = 125.45;
+    const double demoBtc = 0.0012;
 
-    return AnimatedBuilder(
-      animation: _reflectionController,
-      builder: (context, child) {
-        return GlassContainer(
-          padding: const EdgeInsets.all(28),
-          borderRadius: 32,
-          opacity: 0.12,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('USD Balance', style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 12),
-              balanceAsync.when(
-                data: (data) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\$${data['balance_usd']?.toStringAsFixed(2) ?? '1,245.85'}',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 48),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Text(
-                          '≈ 0.0117 BTC',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.white60),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: LiquidGlassTheme.accent.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.trending_up, size: 12, color: LiquidGlassTheme.accent),
-                              SizedBox(width: 4),
-                              Text('+2.4%', style: TextStyle(color: LiquidGlassTheme.accent, fontSize: 11, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                loading: () => const CircularProgressIndicator(color: Colors.white),
-                error: (e, s) => const Text('Erreur chargement'),
-              ),
-            ],
-          ),
-        );
+    if (isDemo) {
+      return _buildBalanceUI(context, demoUsd, demoBtc);
+    }
+
+    final balanceAsync = ref.watch(userBalanceProvider(userId));
+    return balanceAsync.when(
+      data: (data) {
+        final double usd = (data['balance_usd'] as num?)?.toDouble() ?? 0.0;
+        // Convert to BTC using 70k conversion rate if not defined in database
+        final double btc = usd / 70000.0;
+        return _buildBalanceUI(context, usd, btc);
       },
+      loading: () => const GlassContainer(
+        padding: EdgeInsets.all(28),
+        borderRadius: 24,
+        child: Center(child: CircularProgressIndicator(color: Colors.white)),
+      ),
+      error: (e, s) => _buildBalanceUI(context, demoUsd, demoBtc),
     );
   }
 
-  Widget _buildLightningStatus() {
-    return Center(
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        borderRadius: 20,
-        opacity: 0.05,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: LiquidGlassTheme.accent,
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: LiquidGlassTheme.accent, blurRadius: 10, spreadRadius: 2)],
-              ),
+  Widget _buildBalanceUI(BuildContext context, double usd, double btc) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(24),
+      borderRadius: 24,
+      opacity: 0.1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Solde principal',
+            style: TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '\$${usd.toStringAsFixed(2)} USD',
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: 38,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '≈ ${btc.toStringAsFixed(4)} BTC',
+            style: const TextStyle(
+              color: Colors.white60,
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
             ),
-            const SizedBox(width: 10),
-            const Text('Réseau Lightning connecté', style: TextStyle(color: Colors.white60, fontSize: 12)),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -246,7 +188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           child: _quickActionButton(
             context,
             'Envoyer',
-            Icons.north_east,
+            Icons.arrow_upward_rounded,
             Colors.white,
             Colors.black,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen())),
@@ -257,8 +199,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           child: _quickActionButton(
             context,
             'Recevoir',
-            Icons.south_west,
-            Colors.white10,
+            Icons.arrow_downward_rounded,
+            Colors.white.withValues(alpha: 0.05),
             Colors.white,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceivePaymentScreen())),
           ),
@@ -273,80 +215,128 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         HapticService.light();
         onTap();
       },
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Column(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: bgColor,
-              child: Icon(icon, color: iconColor),
+            Icon(icon, color: iconColor, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                color: iconColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatsCard(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Transactions 30 jours', style: TextStyle(fontWeight: FontWeight.w600)),
-              const Icon(Icons.equalizer, size: 20, color: Colors.white60),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 90,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(12, (index) {
-                final height = [40.0, 60.0, 30.0, 80.0, 100.0, 50.0, 70.0, 40.0, 20.0, 60.0, 45.0, 85.0][index];
-                final isHighlight = index == 4;
-                return Container(
-                  width: 14,
-                  height: height,
+  Widget _buildRecentTransactions(BuildContext context, AuthState authState) {
+    final userId = authState.user?['user_id'] ?? '';
+    final isDemo = userId.startsWith('demo-') || userId.isEmpty;
+
+    final mockTransactions = [
+      {'name': 'Marie', 'amount': -5.0, 'is_incoming': false},
+      {'name': 'Papa', 'amount': 20.0, 'is_incoming': true},
+      {'name': 'Boutique', 'amount': -2.0, 'is_incoming': false},
+    ];
+
+    if (isDemo) {
+      return _buildTransactionsListUI(mockTransactions);
+    }
+
+    final historyAsync = ref.watch(transactionHistoryProvider(userId));
+    return historyAsync.when(
+      data: (txList) {
+        if (txList.isEmpty) {
+          return _buildTransactionsListUI(mockTransactions);
+        }
+        final formattedTxs = txList.map((tx) {
+          final isIncoming = tx['is_incoming'] == true;
+          final double amount = (tx['amount_usd'] as num?)?.toDouble() ?? 0.0;
+          return {
+            'name': tx['counterparty_name'] ?? (isIncoming ? 'Reçu' : 'Envoyé'),
+            'amount': isIncoming ? amount : -amount,
+            'is_incoming': isIncoming,
+          };
+        }).toList();
+        return _buildTransactionsListUI(formattedTxs);
+      },
+      loading: () => const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent)),
+      error: (e, s) => _buildTransactionsListUI(mockTransactions),
+    );
+  }
+
+  Widget _buildTransactionsListUI(List<Map<String, dynamic>> txs) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Transactions récentes',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 16),
+        GlassContainer(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          borderRadius: 20,
+          opacity: 0.05,
+          child: Column(
+            children: txs.map((tx) {
+              final String name = tx['name'] as String;
+              final double amount = tx['amount'] as double;
+              final bool isIncoming = tx['is_incoming'] as bool;
+              
+              final sign = isIncoming ? '+' : '';
+              final amountStr = '$sign${amount.toStringAsFixed(0)}\$';
+              
+              return ListTile(
+                leading: Container(
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: isHighlight ? LiquidGlassTheme.accent : Colors.white10,
-                    borderRadius: BorderRadius.circular(4),
+                    color: isIncoming 
+                        ? LiquidGlassTheme.accent.withValues(alpha: 0.1) 
+                        : Colors.white.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
                   ),
-                );
-              }),
-            ),
+                  child: Center(
+                    child: Text(
+                      isIncoming ? '←' : '→',
+                      style: TextStyle(
+                        color: isIncoming ? LiquidGlassTheme.accent : Colors.white70,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text(
+                  name,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+                trailing: Text(
+                  amountStr,
+                  style: TextStyle(
+                    color: isIncoming ? LiquidGlassTheme.accent : Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            }).toList(),
           ),
-          const SizedBox(height: 24),
-          const Divider(color: Colors.white10),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Total dépensé', style: TextStyle(color: Colors.white38, fontSize: 12)),
-                  Text('\$412.00', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text('Fréquence', style: TextStyle(color: Colors.white38, fontSize: 12)),
-                  Text('Élevée', style: TextStyle(color: LiquidGlassTheme.accent.withValues(alpha: 0.8), fontSize: 16, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

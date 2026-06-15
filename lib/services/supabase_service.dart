@@ -13,6 +13,8 @@ class SupabaseService {
     required String pinHash,
     required String pinSalt,
     String? referralCode,
+    String? userRole,
+    String? parentId,
   }) async {
     final response = await _client.rpc('register_user', params: {
       'p_email': email,
@@ -22,6 +24,8 @@ class SupabaseService {
       'p_pin_hash': pinHash,
       'p_pin_salt': pinSalt,
       'p_referral_code': referralCode,
+      'p_user_role': userRole,
+      'p_parent_id': parentId,
     });
     
     if (response is List && response.isNotEmpty) {

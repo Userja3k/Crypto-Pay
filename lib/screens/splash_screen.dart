@@ -5,7 +5,7 @@ import '../providers/user_provider.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
 import 'dart:math' as math;
-import '../services/haptic_service.dart';
+
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -37,7 +37,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   }
 
   void _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
       final authState = ref.read(authProvider);
       Navigator.of(context).pushReplacement(
@@ -168,8 +168,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Tous droits réservés © 2026',
-                  style: TextStyle(color: Colors.white12, fontSize: 10, letterSpacing: 1),
+                  '© 2026 Crypto-Pay\nTous droits réservés',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white24, fontSize: 12, height: 1.5),
                 ),
               ],
             ),

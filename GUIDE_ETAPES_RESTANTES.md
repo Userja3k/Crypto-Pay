@@ -42,7 +42,7 @@ Quand un utilisateur envoie sa carte d'identité, la photo doit être stockée q
 2. Clique sur **Storage**.
 3. Crée un "Bucket" nommé `kyc-documents`.
 4. Coche la case "Restricted" (pour que seul toi puisse voir les documents).
-
+(Done)
 ---
 
 ## 4. Les Alertes (Notifications FCM) 🔔

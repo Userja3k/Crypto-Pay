@@ -27,12 +27,12 @@ class WelcomeScreen extends StatelessWidget {
                 child: const Icon(Icons.bolt, size: 40, color: Colors.white),
               ),
               const SizedBox(height: 24),
-              Text('Crypto-Pay', style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 40)),
-              const SizedBox(height: 8),
+              Text('Bienvenue sur\nCrypto-Pay', textAlign: TextAlign.center, style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 36, height: 1.2)),
+              const SizedBox(height: 12),
               const Text(
-                'Le mobile money du Bitcoin en Afrique.',
+                'Envoyez et recevez de l\'argent instantanément.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70, fontSize: 16),
+                style: TextStyle(color: Colors.white60, fontSize: 16, height: 1.4),
               ),
               const Spacer(),
               GlassButton(
