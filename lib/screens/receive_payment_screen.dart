@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../providers/user_provider.dart';
+import '../services/haptic_service.dart';
 
 class ReceivePaymentScreen extends ConsumerStatefulWidget {
   const ReceivePaymentScreen({super.key});
@@ -18,163 +18,164 @@ class _ReceivePaymentScreenState extends ConsumerState<ReceivePaymentScreen> {
   String? _bolt11;
   bool _isLoading = false;
 
-  void _triggerHaptic() {
-    HapticFeedback.mediumImpact();
-  }
+  Future<void> _generateInvoice() async {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    if (amount <= 0) return;
 
-  void _generateInvoice() async {
-    final amount = double.tryParse(_amountController.text);
-    if (amount == null || amount <= 0) return;
-
-    _triggerHaptic();
     setState(() => _isLoading = true);
+    HapticService.selection();
+
     try {
       final authState = ref.read(authProvider);
-      final service = ref.read(supabaseServiceProvider);
-      final result = await service.createLightningInvoice(
-        userId: authState.user?['user_id'] ?? '',
+      final result = await ref.read(supabaseServiceProvider).createLightningInvoice(
+        userId: authState.user!['user_id'],
         amountUsd: amount,
       );
-
-      setState(() {
-        _bolt11 = result['bolt11'];
-      });
+      setState(() => _bolt11 = result['bolt11']);
+      HapticService.success();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e')));
-      }
+      debugPrint('Invoice error: $e');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+    final userAddress = "CP-${authState.user?['referral_code'] ?? '123456'}";
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent, 
-        elevation: 0, 
-        title: const Text('Recevoir des fonds', style: TextStyle(fontWeight: FontWeight.bold))
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Recevoir'),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
+        child: Column(
+          children: [
+            _buildQRCodeSection(userAddress),
+            const SizedBox(height: 32),
+            _buildRequestSection(),
+            const SizedBox(height: 32),
+            _buildExternalLinksSection(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQRCodeSection(String address) {
+    return Column(
+      children: [
+        GlassContainer(
+          padding: const EdgeInsets.all(24),
+          borderRadius: 32,
           child: Column(
             children: [
-              const SizedBox(height: 20),
-              GlassContainer(
-                padding: const EdgeInsets.all(40),
-                borderRadius: 32,
-                opacity: 0.1,
-                child: Column(
-                  children: [
-                    Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.qr_code_2, 
-                          size: 160, 
-                          color: Colors.white.withValues(alpha: _bolt11 == null ? 0.2 : 0.9)
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      _bolt11 == null ? 'Générer une facture pour afficher le QR' : 'Scanner pour me payer', 
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)
-                    ),
-                  ],
+              Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
                 ),
+                child: const Icon(Icons.qr_code_2, size: 180, color: Colors.black),
               ),
-              const SizedBox(height: 40),
-              GlassContainer(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                borderRadius: 20,
-                opacity: 0.05,
+              const SizedBox(height: 24),
+              Text(address, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              const SizedBox(height: 8),
+              const Text('Votre ID Crypto-Pay unique', style: TextStyle(color: Colors.white38, fontSize: 12)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _actionIconButton(Icons.copy, 'Copier'),
+            const SizedBox(width: 24),
+            _actionIconButton(Icons.share, 'Partager'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _actionIconButton(IconData icon, String label) {
+    return Column(
+      children: [
+        GlassContainer(
+          padding: const EdgeInsets.all(12),
+          borderRadius: 16,
+          opacity: 0.1,
+          child: Icon(icon, color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildRequestSection() {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      borderRadius: 24,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Demander un montant', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
                 child: TextField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
-                    labelText: 'Montant souhaité (USD)',
-                    labelStyle: TextStyle(color: Colors.white38, fontSize: 14),
-                    prefixIcon: Icon(Icons.attach_money, color: LiquidGlassTheme.accent),
+                    hintText: '0.00',
+                    prefixText: '\$ ',
                     border: InputBorder.none,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              _isLoading 
-                ? const CircularProgressIndicator(color: LiquidGlassTheme.accent)
-                : GlassButton(onPressed: _generateInvoice, child: const Text('Générer une Facture Lightning', style: TextStyle(fontWeight: FontWeight.bold))),
-              
-              if (_bolt11 != null) ...[
-                const SizedBox(height: 32),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('ADRESSE LIGHTNING', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              if (_isLoading)
+                const CircularProgressIndicator(color: LiquidGlassTheme.accent)
+              else
+                IconButton(
+                  onPressed: _generateInvoice,
+                  icon: const Icon(Icons.arrow_forward, color: LiquidGlassTheme.accent),
                 ),
-                const SizedBox(height: 12),
-                GlassContainer(
-                  padding: const EdgeInsets.all(16),
-                  borderRadius: 16,
-                  opacity: 0.1,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SelectableText(
-                          _bolt11!, 
-                          style: const TextStyle(color: LiquidGlassTheme.accent, fontSize: 12, fontFamily: 'Geist'),
-                          maxLines: 1,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: _bolt11!));
-                          HapticFeedback.vibrate();
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copié dans le presse-papier')));
-                        },
-                        icon: const Icon(Icons.copy, size: 20, color: Colors.white54),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GlassButton(
-                        onPressed: () => HapticFeedback.lightImpact(),
-                        isPrimary: false,
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [Icon(Icons.share, size: 18), SizedBox(width: 8), Text('Partager')],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: GlassButton(
-                        onPressed: () => HapticFeedback.lightImpact(),
-                        isPrimary: false,
-                        child: const Text('Demander par SMS'),
-                      ),
-                    ),
-                  ],
-                )
-              ]
             ],
           ),
-        ),
+          if (_bolt11 != null) ...[
+            const Divider(color: Colors.white10),
+            const SizedBox(height: 8),
+            Text(
+              _bolt11!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+          ],
+        ],
       ),
+    );
+  }
+
+  Widget _buildExternalLinksSection() {
+    return Column(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.bolt, color: Colors.orange),
+          title: const Text('Adresse Lightning'),
+          subtitle: const Text('jean@crypto-pay.cd'),
+          trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+          onTap: () {},
+        ),
+      ],
     );
   }
 }

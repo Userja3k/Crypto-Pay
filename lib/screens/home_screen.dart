@@ -1,16 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
-import 'dart:math' as math;
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
-import '../core/widgets/glass_button.dart';
 import '../providers/user_provider.dart';
+import '../services/haptic_service.dart';
 import 'send_payment_screen.dart';
 import 'receive_payment_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
-import 'transaction_history_screen.dart';
 import 'profile_screen.dart';
 import 'pay_menu_screen.dart';
 
@@ -22,8 +20,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
-  final PageController _statsPageController = PageController();
-  int _currentStatsPage = 0;
   late AnimationController _reflectionController;
 
   @override
@@ -31,19 +27,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     super.initState();
     _reflectionController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 4),
     )..repeat();
   }
 
   @override
   void dispose() {
     _reflectionController.dispose();
-    _statsPageController.dispose();
     super.dispose();
-  }
-
-  void _triggerHaptic() {
-    HapticFeedback.lightImpact();
   }
 
   @override
@@ -52,25 +43,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context, authState),
-              const SizedBox(height: 32),
-              _buildBalanceCard(context),
-              const SizedBox(height: 16),
-              _buildLightningStatus(),
-              const SizedBox(height: 32),
-              _buildQuickActions(context),
-              const SizedBox(height: 32),
-              _buildSlidingStats(context),
-            ],
-          ),
+        child: Stack(
+          children: [
+            // Background Orbs
+            Positioned(
+              top: -100,
+              left: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100), child: Container()),
+              ),
+            ),
+
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: LiquidGlassTheme.marginPage,
+                vertical: 20,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context, authState),
+                  const SizedBox(height: 32),
+                  _buildBalanceCard(context, authState),
+                  const SizedBox(height: 16),
+                  _buildLightningStatus(),
+                  const SizedBox(height: 32),
+                  _buildQuickActions(context),
+                  const SizedBox(height: 32),
+                  _buildStatsCard(context),
+                  const SizedBox(height: 120), // Bottom nav space
+                ],
+              ),
+            ),
+
+            Positioned(
+              bottom: 34,
+              left: 24,
+              right: 24,
+              child: _buildBottomNav(context),
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -82,28 +102,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           children: [
             GestureDetector(
               onTap: () {
-                _triggerHaptic();
+                HapticService.selection();
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
               },
-              child: GlassContainer(
-                shape: BoxShape.circle,
-                padding: const EdgeInsets.all(2),
-                opacity: 0.15,
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.transparent,
-                  child: ClipOval(
-                    child: Image.network(
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs',
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: Colors.white),
-                    ),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white12),
+                  image: const DecorationImage(
+                    image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 12),
             Text(
-              'Bonjour, ${authState.user?['full_name']?.split(' ')[0] ?? 'Utilisateur'} 👋',
+              'Bonjour, ${authState.user?['full_name']?.split(' ')[0] ?? 'Jean'} 👋',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24),
             ),
           ],
@@ -111,25 +128,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         Stack(
           children: [
             IconButton(
-              onPressed: () {
-                _triggerHaptic();
-              },
+              onPressed: () => HapticService.selection(),
               icon: const Icon(Icons.notifications_outlined, size: 28),
             ),
             Positioned(
               right: 8,
               top: 8,
               child: Container(
-                padding: const EdgeInsets.all(2),
+                width: 16,
+                height: 16,
                 decoration: BoxDecoration(
-                  color: LiquidGlassTheme.error,
-                  borderRadius: BorderRadius.circular(10),
+                  color: const Color(0xFFFF3B30),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black, width: 2),
                 ),
-                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                child: const Text(
-                  '3',
-                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
+                child: const Center(
+                  child: Text('3', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
@@ -139,8 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildBalanceCard(BuildContext context) {
-    final authState = ref.watch(authProvider);
+  Widget _buildBalanceCard(BuildContext context, AuthState authState) {
     final userId = authState.user?['user_id'] ?? '';
     final balanceAsync = ref.watch(userBalanceProvider(userId));
 
@@ -151,45 +164,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           padding: const EdgeInsets.all(28),
           borderRadius: 32,
           opacity: 0.12,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1 + 0.05 * math.sin(_reflectionController.value * 2 * math.pi))),
-          child: balanceAsync.when(
-            data: (data) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('USD Balance', style: TextStyle(color: Colors.white70, fontSize: 14, letterSpacing: 0.5)),
-                const SizedBox(height: 12),
-                Text(
-                  '\$${data['balance_usd']?.toStringAsFixed(2) ?? '0.00'}',
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 44),
-                ),
-                const SizedBox(height: 12),
-                Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('USD Balance', style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 12),
+              balanceAsync.when(
+                data: (data) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '≈ ${data['balance_sats']?.toString() ?? '0'} sats',
-                      style: const TextStyle(color: Colors.white38, fontSize: 14),
+                      '\$${data['balance_usd']?.toStringAsFixed(2) ?? '1,245.85'}',
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 48),
                     ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: LiquidGlassTheme.accent.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.trending_up, size: 14, color: LiquidGlassTheme.accent),
-                          SizedBox(width: 4),
-                          Text('+2.4%', style: TextStyle(color: LiquidGlassTheme.accent, fontSize: 12, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          '≈ 0.0117 BTC',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.white60),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: LiquidGlassTheme.accent.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.trending_up, size: 12, color: LiquidGlassTheme.accent),
+                              SizedBox(width: 4),
+                              Text('+2.4%', style: TextStyle(color: LiquidGlassTheme.accent, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-            error: (err, stack) => Text('Erreur: $err', style: const TextStyle(color: LiquidGlassTheme.error)),
+                loading: () => const CircularProgressIndicator(color: Colors.white),
+                error: (e, s) => const Text('Erreur chargement'),
+              ),
+            ],
           ),
         );
       },
@@ -197,21 +214,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   }
 
   Widget _buildLightningStatus() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: const BoxDecoration(
-            color: LiquidGlassTheme.accent,
-            shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: LiquidGlassTheme.accent, blurRadius: 8, spreadRadius: 1)],
-          ),
+    return Center(
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        borderRadius: 20,
+        opacity: 0.05,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: LiquidGlassTheme.accent,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: LiquidGlassTheme.accent, blurRadius: 10, spreadRadius: 2)],
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text('Réseau Lightning connecté', style: TextStyle(color: Colors.white60, fontSize: 12)),
+          ],
         ),
-        const SizedBox(width: 10),
-        const Text('Réseau Lightning connecté', style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500)),
-      ],
+      ),
     );
   }
 
@@ -219,74 +243,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     return Row(
       children: [
         Expanded(
-          child: GlassButton(
-            onPressed: () {
-              _triggerHaptic();
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen()));
-            },
-            isPrimary: false,
-            child: const Column(
-              children: [
-                CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.north_east, color: Colors.black)),
-                SizedBox(height: 12),
-                Text('Envoyer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-              ],
-            ),
+          child: _quickActionButton(
+            context,
+            'Envoyer',
+            Icons.north_east,
+            Colors.white,
+            Colors.black,
+            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen())),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: GlassButton(
-            onPressed: () {
-              _triggerHaptic();
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceivePaymentScreen()));
-            },
-            isPrimary: false,
-            child: const Column(
-              children: [
-                CircleAvatar(backgroundColor: Colors.white12, child: Icon(Icons.south_west, color: Colors.white)),
-                SizedBox(height: 12),
-                Text('Recevoir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-              ],
-            ),
+          child: _quickActionButton(
+            context,
+            'Recevoir',
+            Icons.south_west,
+            Colors.white10,
+            Colors.white,
+            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceivePaymentScreen())),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSlidingStats(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 240,
-          child: PageView(
-            controller: _statsPageController,
-            onPageChanged: (i) {
-              _triggerHaptic();
-              setState(() => _currentStatsPage = i);
-            },
-            children: [
-              _buildStatsCard(context),
-              _buildRecentTransactionsCard(context),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(2, (index) => AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: _currentStatsPage == index ? 24 : 8,
-            height: 8,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: _currentStatsPage == index ? Colors.white : Colors.white24,
+  Widget _quickActionButton(BuildContext context, String label, IconData icon, Color bgColor, Color iconColor, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: () {
+        HapticService.light();
+        onTap();
+      },
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: bgColor,
+              child: Icon(icon, color: iconColor),
             ),
-          )),
+            const SizedBox(height: 12),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -299,11 +299,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Transactions 30 jours', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 16)),
-              Icon(Icons.equalizer, color: Colors.white.withValues(alpha: 0.5)),
+              const Text('Transactions 30 jours', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Icon(Icons.equalizer, size: 20, color: Colors.white60),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 24),
           SizedBox(
             height: 90,
             child: Row(
@@ -312,25 +312,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               children: List.generate(12, (index) {
                 final height = [40.0, 60.0, 30.0, 80.0, 100.0, 50.0, 70.0, 40.0, 20.0, 60.0, 45.0, 85.0][index];
                 final isHighlight = index == 4;
-                return AnimatedContainer(
-                  duration: Duration(milliseconds: 500 + index * 50),
-                  curve: Curves.easeOutBack,
+                return Container(
                   width: 14,
-                  height: height * 0.8,
+                  height: height,
                   decoration: BoxDecoration(
-                    color: isHighlight ? LiquidGlassTheme.accent : Colors.white.withValues(alpha: 0.1),
+                    color: isHighlight ? LiquidGlassTheme.accent : Colors.white10,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 );
               }),
             ),
           ),
-          const Spacer(),
-          const Row(
+          const SizedBox(height: 24),
+          const Divider(color: Colors.white10),
+          const SizedBox(height: 16),
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total dépensé', style: TextStyle(color: Colors.white38, fontSize: 14)),
-              Text('\$412.00', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Total dépensé', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  Text('\$412.00', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('Fréquence', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  Text('Élevée', style: TextStyle(color: LiquidGlassTheme.accent.withValues(alpha: 0.8), fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ],
           ),
         ],
@@ -338,77 +350,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildRecentTransactionsCard(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Dernières transactions', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 16)),
-          const SizedBox(height: 20),
-          _transactionItem('Papa', '+50\$', LiquidGlassTheme.accent, Icons.add_circle_outline),
-          _transactionItem('Maman', '+20\$', LiquidGlassTheme.accent, Icons.add_circle_outline),
-          _transactionItem('Boutique', '-5\$', Colors.white38, Icons.remove_circle_outline),
-          const Spacer(),
-          Center(
-            child: TextButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen())),
-              child: const Text('Voir tout l\'historique', style: TextStyle(color: LiquidGlassTheme.accent, fontWeight: FontWeight.bold)),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _transactionItem(String name, String amount, Color amountColor, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Icon(icon, color: amountColor.withValues(alpha: 0.5), size: 20),
-          const SizedBox(width: 12),
-          Text(name, style: const TextStyle(color: Colors.white, fontSize: 16)),
-          const Spacer(),
-          Text(amount, style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 34),
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      borderRadius: 24,
+      opacity: 0.15,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(context, Icons.person_outline, isActive: true, destination: const HomeScreen()),
-          _navItem(context, Icons.search, destination: const SearchScreen()),
-          _navItem(context, Icons.credit_card, destination: const PayMenuScreen()),
-          _navItem(context, Icons.settings_outlined, destination: const SettingsScreen()),
+          _navItem(Icons.person, isActive: true, onTap: () {}),
+          _navItem(Icons.search, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen()))),
+          _navItem(Icons.payments, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayMenuScreen()))),
+          _navItem(Icons.settings, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
         ],
       ),
     );
   }
 
-  Widget _navItem(BuildContext context, IconData icon, {bool isActive = false, required Widget destination}) {
+  Widget _navItem(IconData icon, {bool isActive = false, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: () {
-        _triggerHaptic();
-        if (!isActive) Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+        HapticService.selection();
+        onTap();
       },
-      child: GlassContainer(
-        borderRadius: 24,
+      child: Container(
         padding: const EdgeInsets.all(12),
-        opacity: isActive ? 0.2 : 0,
-        border: isActive ? null : Border.all(color: Colors.transparent),
-        child: Icon(icon, color: isActive ? Colors.white : Colors.white38, size: 26),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white : Colors.transparent,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: isActive ? Colors.black : Colors.white60, size: 28),
       ),
     );
   }

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
-import '../providers/user_provider.dart';
 
-class ReferralScreen extends ConsumerWidget {
+class ReferralScreen extends StatelessWidget {
   const ReferralScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, title: const Text('Parrainage')),
       body: SafeArea(

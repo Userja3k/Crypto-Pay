@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../providers/user_provider.dart';
@@ -23,109 +22,105 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       setState(() => _results = []);
       return;
     }
+
     setState(() => _isLoading = true);
     try {
-      final service = ref.read(supabaseServiceProvider);
-      final results = await service.searchUsers(value);
+      final results = await ref.read(supabaseServiceProvider).searchUsers(value);
       setState(() => _results = results);
     } catch (e) {
-      // Handle error
+      debugPrint('Search error: $e');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              Text('Recherche Universelle', style: Theme.of(context).textTheme.headlineLarge),
-              const SizedBox(height: 12),
-              const Text('Envoyez à n\'importe qui, sans connaître son adresse.', style: TextStyle(color: Colors.white38, fontSize: 14)),
-              const SizedBox(height: 32),
-              GlassContainer(
-                borderRadius: 24,
-                opacity: 0.1,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearch,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  decoration: const InputDecoration(
-                    hintText: 'Nom, email, ou CP-ID...',
-                    hintStyle: TextStyle(color: Colors.white30),
-                    border: InputBorder.none,
-                    icon: Icon(Icons.search, color: LiquidGlassTheme.accent),
-                  ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Recherche universelle'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
+            child: GlassContainer(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              borderRadius: 20,
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearch,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Nom, email, ou ID Crypto-Pay',
+                  border: InputBorder.none,
+                  icon: Icon(Icons.search, color: LiquidGlassTheme.accent),
                 ),
               ),
-              const SizedBox(height: 32),
-              if (_isLoading)
-                const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent))
-              else
-                Expanded(
-                  child: _results.isEmpty 
-                    ? _buildEmptyState()
-                    : ListView.builder(
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent))
+              : _results.isEmpty
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: LiquidGlassTheme.marginPage),
                     itemCount: _results.length,
                     itemBuilder: (context, index) {
                       final user = _results[index];
-                      return GlassContainer(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(8),
-                        borderRadius: 20,
-                        opacity: 0.05,
-                        child: ListTile(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => SendPaymentScreen(initialDestination: user['email'] ?? user['phone'])));
-                          },
-                          leading: GlassContainer(
-                            shape: BoxShape.circle,
-                            padding: const EdgeInsets.all(10),
-                            opacity: 0.1,
-                            child: const Icon(Icons.person, color: Colors.white70, size: 20),
-                          ),
-                          title: Text(user['full_name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                          subtitle: Text(user['email'] ?? user['phone'], style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                          trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white24),
-                        ),
-                      );
+                      return _buildUserResult(user);
                     },
                   ),
-                ),
-            ],
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('UTILISATEURS RÉCENTS', style: TextStyle(color: Colors.white30, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
-        const SizedBox(height: 20),
-        const Center(
-          child: Opacity(
-            opacity: 0.3,
-            child: Column(
-              children: [
-                Icon(Icons.history, size: 48, color: Colors.white24),
-                SizedBox(height: 12),
-                Text('Pas de recherches récentes', style: TextStyle(color: Colors.white38, fontSize: 13)),
-              ],
-            ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 64, color: Colors.white.withValues(alpha: 0.1)),
+          const SizedBox(height: 16),
+          const Text('Recherchez vos amis ou commerçants', style: TextStyle(color: Colors.white38)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserResult(Map<String, dynamic> user) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(12),
+        borderRadius: 20,
+        child: ListTile(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SendPaymentScreen(
+                  recipientId: user['id'],
+                  recipientName: user['full_name'],
+                ),
+              ),
+            );
+          },
+          leading: CircleAvatar(
+            backgroundColor: LiquidGlassTheme.accent.withValues(alpha: 0.2),
+            child: Text(user['full_name'][0], style: const TextStyle(color: LiquidGlassTheme.accent)),
           ),
+          title: Text(user['full_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(user['referral_code'] ?? 'CP-XXXX', style: const TextStyle(color: Colors.white38)),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white24),
         ),
-      ],
+      ),
     );
   }
 }

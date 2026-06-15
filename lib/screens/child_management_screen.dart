@@ -4,6 +4,7 @@ import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../providers/user_provider.dart';
+import '../services/haptic_service.dart';
 
 class ChildManagementScreen extends ConsumerStatefulWidget {
   const ChildManagementScreen({super.key});
@@ -15,95 +16,150 @@ class ChildManagementScreen extends ConsumerStatefulWidget {
 class _ChildManagementScreenState extends ConsumerState<ChildManagementScreen> {
   final _nameController = TextEditingController();
   final _birthDateController = TextEditingController();
+  DateTime? _selectedBirthDate;
+
+  double _maxTx = 50.0;
+  double _maxDay = 100.0;
+  bool _requiresApproval = true;
   bool _isLoading = false;
 
-  Future<void> _handleCreateChild() async {
-    if (_nameController.text.isEmpty || _birthDateController.text.isEmpty) return;
+  Future<void> _createChild() async {
+    if (_selectedBirthDate == null || _nameController.text.isEmpty) return;
 
     setState(() => _isLoading = true);
     try {
       final authState = ref.read(authProvider);
-      final service = ref.read(supabaseServiceProvider);
-      final result = await service.createChildAccount(
-        parentUserId: authState.user?['user_id'] ?? '',
+      final result = await ref.read(supabaseServiceProvider).createChildAccount(
+        parentUserId: authState.user!['user_id'],
         childFullName: _nameController.text,
-        childBirthDate: DateTime.parse(_birthDateController.text),
-        maxPerTransaction: 50.0,
-        maxPerDay: 100.0,
-        maxPerMonth: 500.0,
+        childBirthDate: _selectedBirthDate!,
+        maxPerTransaction: _maxTx,
+        maxPerDay: _maxDay,
+        maxPerMonth: 500,
       );
 
-      if (result['invitation_code'] != null) {
+      if (result['child_user_id'] != null) {
+        HapticService.success();
         if (mounted) {
           showDialog(
             context: context,
             builder: (_) => AlertDialog(
-              backgroundColor: const Color(0xFF131313),
-              title: const Text('Compte enfant créé', style: TextStyle(color: Colors.white)),
-              content: Text('Donnez ce code à votre enfant : ${result['invitation_code']}', style: const TextStyle(color: Colors.white70)),
+              backgroundColor: LiquidGlassTheme.surface,
+              title: const Text('Compte enfant créé'),
+              content: Text('Code d\'invitation: ${result['invitation_code']}'),
               actions: [
-                TextButton(onPressed: () {
-                  Navigator.pop(context); // close dialog
-                  Navigator.pop(context); // back to settings
-                }, child: const Text('OK')),
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
               ],
             ),
           );
         }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e')));
-      }
+      debugPrint('Error creating child: $e');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, title: const Text('Crypto-Famille')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Ajouter un enfant', style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 24),
-              _buildInput('Prénom de l\'enfant', _nameController),
-              const SizedBox(height: 16),
-              _buildInput('Date de naissance (AAAA-MM-JJ)', _birthDateController),
-              const SizedBox(height: 32),
-              const Text('Limites par défaut :', style: TextStyle(color: Colors.white70, fontSize: 13)),
-              const SizedBox(height: 8),
-              const Text('• 50\$ / transaction\n• 100\$ / jour\n• Approbation parentale requise', style: TextStyle(color: Colors.white54, fontSize: 13)),
-              const SizedBox(height: 48),
-              _isLoading 
-                ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                : GlassButton(onPressed: _handleCreateChild, child: const Text('Générer un Code d\'Invitation')),
-            ],
-          ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Crypto-Famille'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ajouter un enfant', style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 24),
+            _buildTextField('Prénom de l\'enfant', _nameController, icon: Icons.child_care),
+            const SizedBox(height: 16),
+            _buildTextField(
+              'Date de naissance',
+              _birthDateController,
+              icon: Icons.calendar_today,
+              readOnly: true,
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now(),
+                );
+                if (date != null) {
+                  setState(() {
+                    _selectedBirthDate = date;
+                    _birthDateController.text = "${date.day}/${date.month}/${date.year}";
+                  });
+                }
+              }
+            ),
+            const SizedBox(height: 32),
+            const Text('Limites de dépenses', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            _buildLimitSlider('Max par transaction', _maxTx, 10, 200, (v) => setState(() => _maxTx = v)),
+            _buildLimitSlider('Max par jour', _maxDay, 20, 500, (v) => setState(() => _maxDay = v)),
+            const SizedBox(height: 24),
+            SwitchListTile(
+              title: const Text('Approbation parentale'),
+              subtitle: const Text('Nécessaire pour chaque transaction'),
+              value: _requiresApproval,
+              onChanged: (v) => setState(() => _requiresApproval = v),
+              activeColor: LiquidGlassTheme.accent,
+            ),
+            const SizedBox(height: 48),
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent))
+            else
+              GlassButton(onPressed: _createChild, child: const Text('Créer le compte enfant')),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInput(String label, TextEditingController controller) {
+  Widget _buildTextField(String label, TextEditingController controller, {IconData? icon, bool readOnly = false, VoidCallback? onTap}) {
     return GlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       borderRadius: 16,
-      opacity: 0.05,
       child: TextField(
         controller: controller,
+        readOnly: readOnly,
+        onTap: onTap,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white38),
           border: InputBorder.none,
+          icon: icon != null ? Icon(icon, color: LiquidGlassTheme.accent) : null,
         ),
       ),
+    );
+  }
+
+  Widget _buildLimitSlider(String label, double value, double min, double max, Function(double) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white60)),
+            Text('\$${value.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, color: LiquidGlassTheme.accent)),
+          ],
+        ),
+        Slider(
+          value: value,
+          min: min,
+          max: max,
+          activeColor: LiquidGlassTheme.accent,
+          inactiveColor: Colors.white10,
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }

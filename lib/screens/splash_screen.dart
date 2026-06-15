@@ -5,6 +5,7 @@ import '../providers/user_provider.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
 import 'dart:math' as math;
+import '../services/haptic_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -16,16 +17,20 @@ class SplashScreen extends ConsumerStatefulWidget {
 class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacity;
+  late Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1500),
     );
     _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.easeIn)),
+    );
+    _scale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
     _controller.forward();
     _navigateToNext();
@@ -36,8 +41,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     if (mounted) {
       final authState = ref.read(authProvider);
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => authState.isAuthenticated ? const HomeScreen() : const WelcomeScreen(),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+            authState.isAuthenticated ? const HomeScreen() : const WelcomeScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 800),
         ),
       );
     }
@@ -52,70 +62,119 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: LiquidGlassTheme.background,
-      body: Center(
-        child: FadeTransition(
-          opacity: _opacity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo: White circle on black, Bold B inclined 80deg left, "opening" the circle
-              SizedBox(
-                width: 140,
-                height: 140,
-                child: Stack(
-                  alignment: Alignment.center,
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Background Atmospheric Elements
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.03),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Center(
+            child: FadeTransition(
+              opacity: _opacity,
+              child: ScaleTransition(
+                scale: _scale,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                    // Requested Logo
+                    SizedBox(
+                      width: 140,
+                      height: 140,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 110,
+                            height: 110,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          // The "B" opening the circle
+                          Transform.translate(
+                            offset: const Offset(-15, 0),
+                            child: Transform.rotate(
+                              angle: -80 * (math.pi / 180),
+                              child: const Text(
+                                '₿',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 120,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Transform.translate(
-                      offset: const Offset(-10, 0), // Push slightly left to "open" the circle
-                      child: Transform.rotate(
-                        angle: -80 * (math.pi / 180),
-                        child: const Text(
-                          '₿',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 110,
-                            fontWeight: FontWeight.w900,
-                            height: 1,
-                          ),
-                        ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Crypto-Pay',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        letterSpacing: -1,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'LIQUID ASSETS',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        letterSpacing: 4,
+                        color: Colors.white38,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
-              Text(
-                'Crypto-Pay',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'LIQUID ASSETS',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  letterSpacing: 6,
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-              const SizedBox(height: 64),
-              const Text(
-                'Tous droits réservés',
-                style: TextStyle(color: Colors.white24, fontSize: 10, letterSpacing: 1),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 60,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified_user, color: LiquidGlassTheme.accent, size: 16),
+                      SizedBox(width: 8),
+                      Text(
+                        'Secured by Bitcoin',
+                        style: TextStyle(color: LiquidGlassTheme.accent, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Tous droits réservés © 2026',
+                  style: TextStyle(color: Colors.white12, fontSize: 10, letterSpacing: 1),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
