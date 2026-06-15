@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../providers/user_provider.dart';
+import '../core/widgets/crypto_pay_logo.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
-import 'dart:math' as math;
 
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -86,40 +86,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Requested Logo
-                    SizedBox(
-                      width: 140,
-                      height: 140,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 110,
-                            height: 110,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          // The "B" opening the circle
-                          Transform.translate(
-                            offset: const Offset(-15, 0),
-                            child: Transform.rotate(
-                              angle: -80 * (math.pi / 180),
-                              child: const Text(
-                                '₿',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 120,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const CryptoPayLogo(size: 140),
                     const SizedBox(height: 32),
                     Text(
                       'Crypto-Pay',

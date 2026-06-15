@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_button.dart';
+import '../core/widgets/crypto_pay_logo.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 
@@ -16,16 +17,7 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.1),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Icon(Icons.bolt, size: 40, color: Colors.white),
-              ),
+              const CryptoPayLogo(size: 100),
               const SizedBox(height: 24),
               Text('Bienvenue sur\nCrypto-Pay', textAlign: TextAlign.center, style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 36, height: 1.2)),
               const SizedBox(height: 12),

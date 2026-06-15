@@ -62,7 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 28),
                   _buildQuickActions(context),
                   const SizedBox(height: 36),
-                  _buildRecentTransactions(context, authState),
+                  _buildSlidableStats(context, authState),
                   const SizedBox(height: 120), // Bottom nav space
                 ],
               ),
@@ -84,8 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
             Text(
               'Bonjour $userName',
@@ -94,16 +93,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     fontWeight: FontWeight.bold,
                   ),
             ),
+            const SizedBox(width: 8),
+            const Text('👋', style: TextStyle(fontSize: 24)),
           ],
         ),
-        GestureDetector(
-          onTap: () {
-            HapticService.selection();
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-          },
-          child: Container(
-            width: 44,
-            height: 44,
+        Row(
+          children: [
+            Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
+                  onPressed: () {
+                    HapticService.selection();
+                  },
+                ),
+                Positioned(
+                  right: 12,
+                  top: 12,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: const Text(
+                      '3',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                HapticService.selection();
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+              },
+              child: Container(
+                width: 44,
+                height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white12),
@@ -192,6 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Colors.white,
             Colors.black,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen())),
+            subtitle: 'Bluetooth / NFC',
           ),
         ),
         const SizedBox(width: 16),
@@ -203,13 +242,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Colors.white.withValues(alpha: 0.05),
             Colors.white,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceivePaymentScreen())),
+            subtitle: 'NFC / QR',
           ),
         ),
       ],
     );
   }
 
-  Widget _quickActionButton(BuildContext context, String label, IconData icon, Color bgColor, Color iconColor, VoidCallback onTap) {
+  Widget _quickActionButton(BuildContext context, String label, IconData icon, Color bgColor, Color iconColor, VoidCallback onTap, {String? subtitle}) {
     return GestureDetector(
       onTap: () {
         HapticService.light();
@@ -222,22 +262,123 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
           children: [
-            Icon(icon, color: iconColor, size: 20),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: TextStyle(
-                color: iconColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: iconColor, size: 20),
+                const SizedBox(width: 10),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: iconColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: iconColor.withValues(alpha: 0.5),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+
+  Widget _buildSlidableStats(BuildContext context, AuthState authState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 300,
+          child: PageView(
+            physics: const BouncingScrollPhysics(),
+            children: [
+              _buildStatsCard(context),
+              _buildRecentTransactions(context, authState),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 8, height: 8, decoration: const BoxDecoration(color: LiquidGlassTheme.accent, shape: BoxShape.circle)),
+              const SizedBox(width: 8),
+              Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsCard(BuildContext context) {
+    // Static data to avoid non-deterministic UI
+    final stats = [60.0, 110.0, 80.0, 130.0, 95.0, 150.0, 70.0];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Transactions 30 jours',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 16),
+        GlassContainer(
+          padding: const EdgeInsets.all(20),
+          borderRadius: 24,
+          opacity: 0.05,
+          child: SizedBox(
+            height: 180,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(stats.length, (index) {
+                return _buildBar(stats[index], index == 5);
+              }),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBar(double targetHeight, bool isSelected) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: targetHeight),
+      duration: const Duration(milliseconds: 1200),
+      curve: Curves.easeOutBack,
+      builder: (context, height, child) {
+        return Container(
+          width: 30,
+          height: height,
+          decoration: BoxDecoration(
+            color: isSelected ? LiquidGlassTheme.accent : LiquidGlassTheme.accent.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: LiquidGlassTheme.accent.withValues(alpha: 0.4),
+                blurRadius: 15,
+                spreadRadius: 2,
+              )
+            ] : null,
+          ),
+        );
+      },
     );
   }
 
@@ -348,10 +489,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(Icons.person, isActive: true, onTap: () {}),
+          _navItem(Icons.person_outline, isActive: true, onTap: () {}),
           _navItem(Icons.search, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen()))),
-          _navItem(Icons.payments, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayMenuScreen()))),
-          _navItem(Icons.settings, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
+          _navItem(Icons.credit_card, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayMenuScreen()))),
+          _navItem(Icons.settings_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
         ],
       ),
     );

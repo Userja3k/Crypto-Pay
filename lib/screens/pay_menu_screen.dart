@@ -54,9 +54,9 @@ class PayMenuScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _buildLargeMenuItem(
                 context,
-                icon: Icons.alternate_email,
-                title: 'Adresse externe',
-                subtitle: 'Binance, WoS, Phoenix, etc.',
+                icon: Icons.link,
+                title: 'Lien d\'une structure extérieur',
+                subtitle: 'Partenaire à l\'application (ex: Binance)',
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen()));
                 },
