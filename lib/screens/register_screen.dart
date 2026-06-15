@@ -43,6 +43,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   // Step 3A: Parent approval (Minors only)
   final _parentEmailController = TextEditingController();
   final _parentPhoneController = TextEditingController();
+  final _referralAccountNameController = TextEditingController();
   bool _approvalRequestSent = false;
   bool _approvalApprovedByParent = false;
   final _approvalCodeController = TextEditingController();
@@ -69,6 +70,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _cityController.dispose();
     _parentEmailController.dispose();
     _parentPhoneController.dispose();
+    _referralAccountNameController.dispose();
     _approvalCodeController.dispose();
     _pinController.dispose();
     _confirmPinController.dispose();
@@ -545,23 +547,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 8),
           const Text('Un compte mineur doit être approuvé par un parent.', style: TextStyle(color: Colors.white60)),
           const SizedBox(height: 28),
-          
+
+          _buildTextField('Nom du compte de parrainage', _referralAccountNameController, icon: Icons.person_add_outlined),
+          const SizedBox(height: 16),
           _buildTextField('Email du parent', _parentEmailController, icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
           const SizedBox(height: 16),
           _buildTextField('Numéro Crypto-Pay du parent', _parentPhoneController, icon: Icons.phone, keyboardType: TextInputType.phone),
           const SizedBox(height: 24),
-          
+
           if (!_approvalRequestSent)
             GlassButton(
               onPressed: () {
-                if (_parentEmailController.text.isNotEmpty && _parentPhoneController.text.isNotEmpty) {
+                if (_parentEmailController.text.isNotEmpty &&
+                    _parentPhoneController.text.isNotEmpty &&
+                    _referralAccountNameController.text.isNotEmpty) {
                   setState(() {
                     _approvalRequestSent = true;
                   });
                   HapticService.medium();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Veuillez remplir les coordonnées du parent')),
+                    const SnackBar(content: Text('Veuillez remplir les informations de parrainage')),
                   );
                 }
               },
