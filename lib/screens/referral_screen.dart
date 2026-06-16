@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
+import '../services/haptic_service.dart';
+import '../providers/user_provider.dart';
 
-class ReferralScreen extends StatelessWidget {
+class ReferralScreen extends ConsumerWidget {
   const ReferralScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final code = authState.user?['referral_code'] ?? '—';
+
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, title: const Text('Parrainage')),
       body: SafeArea(
@@ -32,9 +38,14 @@ class ReferralScreen extends StatelessWidget {
                   children: [
                     const Text('VOTRE CODE', style: TextStyle(color: Colors.white54, fontSize: 12)),
                     const SizedBox(height: 8),
-                    const Text('CRYPTO-2026', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                    Text(code, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2)),
                     const SizedBox(height: 16),
-                    GlassButton(onPressed: () {}, child: const Text('Partager mon code')),
+                    GlassButton(onPressed: () {
+                      HapticService.selection();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Partage non disponible pour le moment')),
+                      );
+                    }, child: const Text('Partager mon code')),
                   ],
                 ),
               ),

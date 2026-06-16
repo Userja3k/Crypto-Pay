@@ -4,6 +4,7 @@ import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../providers/user_provider.dart';
 import '../services/haptic_service.dart';
+import 'transaction_history_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -63,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
         const SizedBox(height: 20),
         Text(user?['full_name'] ?? 'Jean Kasavubu', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(user?['email'] ?? 'jean@crypto-pay.cd', style: const TextStyle(color: Colors.white38)),
+        Text(user?['email'] ?? '—', style: const TextStyle(color: Colors.white38)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -88,11 +89,11 @@ class ProfileScreen extends ConsumerWidget {
   Widget _buildStatsSection(Map<String, dynamic>? user) {
     return Row(
       children: [
-        _statItem('Envoyé', '\$1.2k'),
+        _statItem('Envoyé', '---'),
         const SizedBox(width: 16),
-        _statItem('Reçu', '\$3.5k'),
+        _statItem('Reçu', '---'),
         const SizedBox(width: 16),
-        _statItem('Bonus', '\$120'),
+        _statItem('Transactions', '0'),
       ],
     );
   }
@@ -117,24 +118,45 @@ class ProfileScreen extends ConsumerWidget {
       borderRadius: 24,
       child: Column(
         children: [
-          _actionTile(Icons.history, 'Historique complet', () {}),
-          _actionTile(Icons.account_balance_wallet_outlined, 'Mes portefeuilles', () {}),
-          _actionTile(Icons.qr_code_scanner, 'Mon code QR', () {}),
-          _actionTile(Icons.share, 'Partager mon profil', () {}),
+          _actionTile(Icons.history, 'Historique complet', () {
+            HapticService.selection();
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
+          }),
+          _actionTile(Icons.account_balance_wallet_outlined, 'Mes portefeuilles', () {
+            HapticService.selection();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Portefeuilles non disponibles pour le moment')),
+            );
+          }),
+          _actionTile(Icons.qr_code_scanner, 'Mon code QR', () {
+            HapticService.selection();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Code QR disponible dans Recevoir')),
+            );
+          }),
+          _actionTile(Icons.share, 'Partager mon profil', () {
+            HapticService.selection();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Partage non disponible pour le moment')),
+            );
+          }),
         ],
       ),
     );
   }
 
   Widget _actionTile(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white70),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right, color: Colors.white24),
-      onTap: () {
-        HapticService.selection();
-        onTap();
-      },
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(icon, color: Colors.white70),
+        title: Text(title),
+        trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+        onTap: () {
+          HapticService.selection();
+          onTap();
+        },
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
+import '../services/haptic_service.dart';
 import 'send_payment_screen.dart';
 
 class PayMenuScreen extends StatelessWidget {
@@ -25,7 +26,12 @@ class PayMenuScreen extends StatelessWidget {
                 icon: Icons.qr_code_scanner,
                 title: 'Scanner QR Code',
                 subtitle: 'Caméra plein écran, détection auto',
-                onTap: () {},
+                onTap: () {
+                  HapticService.selection();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Scanner QR non disponible pour le moment')),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Row(
@@ -36,7 +42,12 @@ class PayMenuScreen extends StatelessWidget {
                       icon: Icons.nfc,
                       title: 'Paiement NFC',
                       subtitle: 'Approchez les appareils',
-                      onTap: () {},
+                      onTap: () {
+                        HapticService.selection();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Paiement NFC non disponible pour le moment')),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -46,7 +57,12 @@ class PayMenuScreen extends StatelessWidget {
                       icon: Icons.bluetooth,
                       title: 'Bluetooth',
                       subtitle: 'Recherche d\'appareils...',
-                      onTap: () {},
+                      onTap: () {
+                        HapticService.selection();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Paiement Bluetooth non disponible pour le moment')),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -58,6 +74,7 @@ class PayMenuScreen extends StatelessWidget {
                 title: 'Lien d\'une structure extérieur',
                 subtitle: 'Partenaire à l\'application (ex: Binance)',
                 onTap: () {
+                  HapticService.selection();
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen()));
                 },
               ),

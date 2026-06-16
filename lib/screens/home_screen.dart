@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../providers/user_provider.dart';
 import '../services/haptic_service.dart';
+import 'notification_screen.dart';
 import 'send_payment_screen.dart';
 import 'receive_payment_screen.dart';
 import 'search_screen.dart';
@@ -84,18 +85,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Text(
-              'Bonjour $userName',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(width: 8),
-            const Text('👋', style: TextStyle(fontSize: 24)),
-          ],
+        Flexible(
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  'Bonjour $userName',
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('👋', style: TextStyle(fontSize: 24)),
+            ],
+          ),
         ),
         Row(
           children: [
@@ -105,6 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
                   onPressed: () {
                     HapticService.selection();
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
                   },
                 ),
                 Positioned(
@@ -142,15 +149,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Container(
                 width: 44,
                 height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white12),
-              image: const DecorationImage(
-                image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
-                fit: BoxFit.cover,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white12),
+                  image: const DecorationImage(
+                    image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ],
     );
@@ -158,21 +167,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildBalanceCard(BuildContext context, AuthState authState) {
     final userId = authState.user?['user_id'] ?? '';
-    final isDemo = userId.startsWith('demo-') || userId.isEmpty;
-    
-    // Set fallback rates/balances for Demo Jean
-    const double demoUsd = 125.45;
-    const double demoBtc = 0.0012;
-
-    if (isDemo) {
-      return _buildBalanceUI(context, demoUsd, demoBtc);
+    if (userId.isEmpty) {
+      return _buildBalanceUI(context, 0.0, 0.0);
     }
 
     final balanceAsync = ref.watch(userBalanceProvider(userId));
     return balanceAsync.when(
       data: (data) {
         final double usd = (data['balance_usd'] as num?)?.toDouble() ?? 0.0;
-        // Convert to BTC using 70k conversion rate if not defined in database
         final double btc = usd / 70000.0;
         return _buildBalanceUI(context, usd, btc);
       },
@@ -181,7 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         borderRadius: 24,
         child: Center(child: CircularProgressIndicator(color: Colors.white)),
       ),
-      error: (e, s) => _buildBalanceUI(context, demoUsd, demoBtc),
+      error: (e, s) => _buildBalanceUI(context, 0.0, 0.0),
     );
   }
 
@@ -306,7 +308,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: PageView(
             physics: const BouncingScrollPhysics(),
             children: [
-              _buildStatsCard(context),
+              _buildStatsCard(context, authState),
               _buildRecentTransactions(context, authState),
             ],
           ),
@@ -326,15 +328,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildStatsCard(BuildContext context) {
-    // Static data to avoid non-deterministic UI
-    final stats = [60.0, 110.0, 80.0, 130.0, 95.0, 150.0, 70.0];
+  Widget _buildStatsCard(BuildContext context, AuthState authState) {
+    final userId = authState.user?['user_id'] ?? '';
+    final historyAsync = ref.watch(transactionHistoryProvider(userId));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Transactions 30 jours',
+          'Transactions 7 jours',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 16),
@@ -344,12 +346,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           opacity: 0.05,
           child: SizedBox(
             height: 180,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(stats.length, (index) {
-                return _buildBar(stats[index], index == 5);
-              }),
+            child: historyAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, st) => const Center(child: Text('Impossible de charger les statistiques', style: TextStyle(color: Colors.white70))),
+              data: (list) {
+                // compute last 7 days counts
+                final now = DateTime.now();
+                final counts = List<int>.generate(7, (_) => 0);
+                for (final tx in list) {
+                  try {
+                    final created = DateTime.parse(tx['created_at']);
+                    final diff = now.difference(created).inDays;
+                    if (diff >= 0 && diff < 7) counts[6 - diff] += 1;
+                  } catch (_) {}
+                }
+
+                final maxCount = counts.reduce((a, b) => a > b ? a : b);
+                final scale = maxCount > 0 ? (150 / maxCount) : 1.0;
+                final stats = counts.map((c) => c * scale).toList();
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: List.generate(stats.length, (index) {
+                    return _buildBar(stats[index], false);
+                  }),
+                );
+              },
             ),
           ),
         ),
@@ -384,23 +407,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildRecentTransactions(BuildContext context, AuthState authState) {
     final userId = authState.user?['user_id'] ?? '';
-    final isDemo = userId.startsWith('demo-') || userId.isEmpty;
-
-    final mockTransactions = [
-      {'name': 'Marie', 'amount': -5.0, 'is_incoming': false},
-      {'name': 'Papa', 'amount': 20.0, 'is_incoming': true},
-      {'name': 'Boutique', 'amount': -2.0, 'is_incoming': false},
-    ];
-
-    if (isDemo) {
-      return _buildTransactionsListUI(mockTransactions);
+    if (userId.isEmpty) {
+      return _buildEmptyTransactionsUI();
     }
 
     final historyAsync = ref.watch(transactionHistoryProvider(userId));
     return historyAsync.when(
       data: (txList) {
         if (txList.isEmpty) {
-          return _buildTransactionsListUI(mockTransactions);
+          return _buildEmptyTransactionsUI();
         }
         final formattedTxs = txList.map((tx) {
           final isIncoming = tx['is_incoming'] == true;
@@ -414,7 +429,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return _buildTransactionsListUI(formattedTxs);
       },
       loading: () => const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent)),
-      error: (e, s) => _buildTransactionsListUI(mockTransactions),
+      error: (e, s) => _buildEmptyTransactionsUI(),
     );
   }
 
@@ -440,41 +455,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final sign = isIncoming ? '+' : '';
               final amountStr = '$sign${amount.toStringAsFixed(0)}\$';
               
-              return ListTile(
-                leading: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: isIncoming 
-                        ? LiquidGlassTheme.accent.withValues(alpha: 0.1) 
-                        : Colors.white.withValues(alpha: 0.05),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      isIncoming ? '←' : '→',
-                      style: TextStyle(
-                        color: isIncoming ? LiquidGlassTheme.accent : Colors.white70,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+              return Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isIncoming 
+                          ? LiquidGlassTheme.accent.withValues(alpha: 0.1) 
+                          : Colors.white.withValues(alpha: 0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        isIncoming ? '←' : '→',
+                        style: TextStyle(
+                          color: isIncoming ? LiquidGlassTheme.accent : Colors.white70,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                title: Text(
-                  name,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                ),
-                trailing: Text(
-                  amountStr,
-                  style: TextStyle(
-                    color: isIncoming ? LiquidGlassTheme.accent : Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  title: Text(
+                    name,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  trailing: Text(
+                    amountStr,
+                    style: TextStyle(
+                      color: isIncoming ? LiquidGlassTheme.accent : Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               );
             }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyTransactionsUI() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Transactions récentes',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 16),
+        GlassContainer(
+          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+          borderRadius: 20,
+          opacity: 0.05,
+          child: const Center(
+            child: Text(
+              'Aucune transaction disponible',
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
           ),
         ),
       ],
@@ -489,7 +531,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(Icons.person_outline, isActive: true, onTap: () {}),
+          _navItem(Icons.person_outline, isActive: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()))),
           _navItem(Icons.search, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen()))),
           _navItem(Icons.credit_card, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayMenuScreen()))),
           _navItem(Icons.settings_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),

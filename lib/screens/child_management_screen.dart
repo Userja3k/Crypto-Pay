@@ -109,7 +109,7 @@ class _ChildManagementScreenState extends ConsumerState<ChildManagementScreen> {
               subtitle: const Text('Nécessaire pour chaque transaction'),
               value: _requiresApproval,
               onChanged: (v) => setState(() => _requiresApproval = v),
-              activeColor: LiquidGlassTheme.accent,
+              activeThumbColor: LiquidGlassTheme.accent,
             ),
             const SizedBox(height: 48),
             if (_isLoading)

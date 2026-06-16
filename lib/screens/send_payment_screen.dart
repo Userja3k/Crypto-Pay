@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
-import '../core/widgets/glass_button.dart';
 import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
 import 'payment_success_screen.dart';
@@ -23,7 +22,8 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
   final _destinationController = TextEditingController();
 
   bool _isLoading = false;
-  String _paymentMethod = 'internal'; // 'internal' or 'lightning'
+  double _slideProgress = 0.0;
+  final String _paymentMethod = 'internal'; // 'internal' or 'lightning'
 
   @override
   void initState() {
@@ -172,13 +172,92 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('Frais de réseau', style: TextStyle(color: Colors.white38)),
-            Text('\$0.15', style: Theme.of(context).textTheme.labelMedium),
+            Text('—', style: Theme.of(context).textTheme.labelMedium),
           ],
         ),
         const SizedBox(height: 24),
-        GlassButton(
-          onPressed: _processPayment,
-          child: const Text('Glisser pour payer', style: TextStyle(fontWeight: FontWeight.bold)),
+        GlassContainer(
+          borderRadius: 50,
+          opacity: 0.12,
+          padding: const EdgeInsets.all(4),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const knobSize = 56.0;
+              final maxSlide = (constraints.maxWidth - knobSize - 8).clamp(0.0, double.infinity);
+              final left = maxSlide * _slideProgress;
+
+              return GestureDetector(
+                onHorizontalDragUpdate: (details) {
+                  if (_isLoading || maxSlide <= 0) return;
+                  setState(() {
+                    _slideProgress = (_slideProgress + details.delta.dx / maxSlide).clamp(0.0, 1.0);
+                  });
+                },
+                onHorizontalDragEnd: (_) {
+                  if (_isLoading) return;
+                  if (_slideProgress >= 0.85) {
+                    setState(() => _slideProgress = 1.0);
+                    _processPayment();
+                  } else {
+                    setState(() => _slideProgress = 0.0);
+                  }
+                },
+                child: SizedBox(
+                  height: 72,
+                  child: Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Center(
+                            child: Text(
+                              _isLoading ? 'Traitement...' : 'Glisser pour payer',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 150),
+                        left: left,
+                        top: 8,
+                        child: Container(
+                          width: knobSize,
+                          height: knobSize,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: LiquidGlassTheme.accent.withValues(alpha: 0.25),
+                                blurRadius: 18,
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.flash_on,
+                              size: 28,
+                              color: LiquidGlassTheme.accent,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );

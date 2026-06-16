@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
-import '../core/widgets/glass_button.dart';
 import '../providers/user_provider.dart';
 import '../services/haptic_service.dart';
 
@@ -166,14 +165,23 @@ class _ReceivePaymentScreenState extends ConsumerState<ReceivePaymentScreen> {
   }
 
   Widget _buildExternalLinksSection() {
+    final authState = ref.watch(authProvider);
     return Column(
       children: [
-        ListTile(
-          leading: const Icon(Icons.bolt, color: Colors.orange),
-          title: const Text('Adresse Lightning'),
-          subtitle: const Text('jean@crypto-pay.cd'),
-          trailing: const Icon(Icons.chevron_right, color: Colors.white24),
-          onTap: () {},
+        Material(
+          color: Colors.transparent,
+          child: ListTile(
+            leading: const Icon(Icons.bolt, color: Colors.orange),
+            title: const Text('Adresse Lightning'),
+            subtitle: Text(authState.user?['email'] ?? '—'),
+            trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+            onTap: () {
+              HapticService.selection();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Adresse Lightning non disponible pour le moment')),
+              );
+            },
+          ),
         ),
       ],
     );

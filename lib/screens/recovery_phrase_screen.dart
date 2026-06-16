@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../services/haptic_service.dart';
-import '../providers/user_provider.dart';
 import 'home_screen.dart';
 
 class RecoveryPhraseScreen extends StatefulWidget {

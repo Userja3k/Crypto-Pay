@@ -163,9 +163,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final password = _passwordController.text.trim();
       final fullName = _nameController.text.trim();
       
-      // Auto-generate unique mock phone number
+      // Generate unique placeholder phone number for registration
       final randomSuffix = (math.Random().nextInt(900000000) + 100000000).toString();
-      final mockPhone = '+243$randomSuffix';
+      final generatedPhone = '+243$randomSuffix';
 
       final pinSalt = DateTime.now().millisecondsSinceEpoch.toString();
       final passwordHash = SecurityUtils.hashPin(password, salt: pinSalt);
@@ -173,7 +173,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       // Register via database (using the password hash as pinHash so verifyLogin works)
       final result = await ref.read(supabaseServiceProvider).registerUser(
         email: email,
-        phone: mockPhone,
+        phone: generatedPhone,
         fullName: fullName,
         birthDate: _selectedBirthDate!,
         pinHash: passwordHash,
@@ -218,34 +218,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         }
       }
     } catch (e) {
-      // Offline fallback for testing
-      HapticService.success();
-      final email = _emailController.text.trim();
-      final fullName = _nameController.text.trim();
-      
-      // Save biometrics choice
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('biometrics_enabled', _useBiometrics);
-      await prefs.setString('biometric_type', isIOS ? 'face_id' : 'fingerprint');
-      if (_useBiometrics) {
-        await prefs.setString('biometric_email', email);
-        await prefs.setString('biometric_password', _passwordController.text.trim());
-      }
-
-      final mockUser = {
-        'user_id': 'mock-id-${DateTime.now().millisecondsSinceEpoch}',
-        'full_name': fullName,
-        'email': email,
-        'user_role': _isMinor ? 'child' : 'adult',
-        'kyc_level': 'basic',
-      };
-      await ref.read(authProvider.notifier).login(mockUser);
-
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (route) => false,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur inscription: $e')),
         );
       }
     } finally {

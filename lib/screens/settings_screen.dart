@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../services/haptic_service.dart';
+import 'about_screen.dart';
 import 'child_management_screen.dart';
 import 'parent_approval_screen.dart';
 import 'kyc_submission_screen.dart';
 import 'referral_screen.dart';
+import 'profile_screen.dart';
 import 'welcome_screen.dart';
 import '../providers/user_provider.dart';
 
@@ -34,7 +36,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             _buildSection('Compte', [
-              _buildTile(Icons.person_outline, 'Profil', () {}),
+              _buildTile(Icons.person_outline, 'Profil', () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen()));
+              }),
               _buildTile(Icons.verified_user_outlined, 'Vérification (KYC)', () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const KycSubmissionScreen()));
               }),
@@ -50,12 +54,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ]),
             const SizedBox(height: 24),
             _buildSection('Sécurité', [
-              _buildTile(Icons.lock_outline, 'Modifier le code PIN', () {}),
+              _buildTile(Icons.lock_outline, 'Modifier le code PIN', () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Modification du code PIN non disponible pour le moment')),
+                );
+              }),
               SwitchListTile(
                 title: const Text('Face ID / Empreinte'),
                 value: _faceId,
                 onChanged: (v) => setState(() => _faceId = v),
-                activeColor: LiquidGlassTheme.accent,
+                activeThumbColor: LiquidGlassTheme.accent,
               ),
             ]),
             const SizedBox(height: 24),
@@ -77,12 +85,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
-              _buildTile(Icons.translate, 'Langue (Français)', () {}),
+              _buildTile(Icons.translate, 'Langue', () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('L\'application utilise le français')),
+                );
+              }),
             ]),
             const SizedBox(height: 24),
             _buildSection('Support', [
-              _buildTile(Icons.help_outline, 'Centre d\'aide', () {}),
-              _buildTile(Icons.info_outline, 'À propos', () {}),
+              _buildTile(Icons.help_outline, 'Centre d\'aide', () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Centre d\'aide non disponible pour le moment')),
+                );
+              }),
+              _buildTile(Icons.info_outline, 'À propos', () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
+              }),
             ]),
             const SizedBox(height: 48),
             TextButton(

@@ -63,12 +63,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final salt = await ref.read(supabaseServiceProvider).getUserSalt(email);
       
       if (salt == null) {
-        // Fallback for Demo/Testing
-        if (email == 'jean@crypto-pay.cd' || email == 'jean@crypto-pay.com') {
-          _loginAsDemoUser('Jean Kasavubu', email);
-          return;
-        }
-        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Utilisateur non trouvé')),
@@ -112,12 +106,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       }
     } catch (e) {
-      // Offline fallback for testing
-      if (email == 'jean@crypto-pay.cd' || email == 'jean@crypto-pay.com') {
-        _loginAsDemoUser('Jean Kasavubu', email);
-        return;
-      }
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur connexion: $e')),
@@ -125,32 +113,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  void _loginAsDemoUser(String name, String email) async {
-    HapticService.success();
-    final mockUser = {
-      'user_id': 'demo-uuid-jean-12345',
-      'full_name': name,
-      'email': email,
-      'user_role': 'adult',
-      'kyc_level': 'verified',
-    };
-    
-    // Save credentials if biometrics was enabled
-    if (_biometricsEnabled) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('biometric_email', email);
-      await prefs.setString('biometric_password', 'password');
-    }
-    
-    await ref.read(authProvider.notifier).login(mockUser);
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
     }
   }
 
@@ -210,8 +172,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     Navigator.pop(context); // Close dialog
 
     final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('biometric_email') ?? 'jean@crypto-pay.cd';
-    final savedPassword = prefs.getString('biometric_password') ?? 'password';
+    final savedEmail = prefs.getString('biometric_email') ?? '';
+    final savedPassword = prefs.getString('biometric_password') ?? '';
 
     _emailController.text = savedEmail;
     _passwordController.text = savedPassword;
@@ -261,21 +223,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           opacity: 0.1,
                           border: Border.all(color: LiquidGlassTheme.accent.withValues(alpha: 0.3)),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 _biometricType == 'face_id' ? Icons.face_retouching_natural : Icons.fingerprint,
                                 color: LiquidGlassTheme.accent,
                               ),
                               const SizedBox(width: 12),
-                              Text(
-                                _biometricType == 'face_id' 
-                                    ? '🔒 Se connecter avec Face ID' 
-                                    : '🔒 Se connecter avec l\'empreinte digitale',
-                                style: const TextStyle(
-                                  color: LiquidGlassTheme.accent, 
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                              Flexible(
+                                child: Text(
+                                  _biometricType == 'face_id'
+                                      ? '🔒 Se connecter avec Face ID'
+                                      : '🔒 Se connecter avec l\'empreinte digitale',
+                                  style: const TextStyle(
+                                    color: LiquidGlassTheme.accent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
                                 ),
                               ),
                             ],
