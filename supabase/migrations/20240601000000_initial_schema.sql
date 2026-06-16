@@ -528,7 +528,7 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION cryptopay.get_transaction_history(p_user_id UUID, p_limit INT DEFAULT 20, p_offset INT DEFAULT 0, p_transaction_type cryptopay.transaction_type_enum DEFAULT NULL)
 RETURNS TABLE(id UUID, amount_usd DECIMAL(15,8), fee_usd DECIMAL(15,8), counterparty_name VARCHAR(255), transaction_type VARCHAR(20), note TEXT, status VARCHAR(20), created_at TIMESTAMPTZ, is_incoming BOOLEAN) AS $$
 BEGIN
-    RETURN QUERY SELECT t.id, t.amount_usd, t.fee_usd, (SELECT full_name FROM cryptopay.users WHERE id = t.counterparty_user_id) AS counterparty_name, t.transaction_type::VARCHAR, t.note, t.status::VARCHAR, t.created_at, (t.transaction_type = 'receive') AS is_incoming
+    RETURN QUERY SELECT t.id, t.amount_usd, t.fee_usd, (SELECT u.full_name FROM cryptopay.users u WHERE u.id = t.counterparty_user_id) AS counterparty_name, t.transaction_type::VARCHAR, t.note, t.status::VARCHAR, t.created_at, (t.transaction_type = 'receive') AS is_incoming
     FROM cryptopay.transactions t JOIN cryptopay.accounts a ON a.id = t.account_id WHERE a.user_id = p_user_id AND (p_transaction_type IS NULL OR t.transaction_type = p_transaction_type) ORDER BY t.created_at DESC LIMIT p_limit OFFSET p_offset;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -536,7 +536,7 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION cryptopay.get_transaction_detail(p_transaction_id UUID)
 RETURNS TABLE(id UUID, amount_usd DECIMAL(15,8), amount_sats BIGINT, fee_usd DECIMAL(15,8), transaction_type VARCHAR(20), counterparty_name VARCHAR(255), note TEXT, status VARCHAR(20), reference_number VARCHAR(50), created_at TIMESTAMPTZ, completed_at TIMESTAMPTZ) AS $$
 BEGIN
-    RETURN QUERY SELECT t.id, t.amount_usd, t.amount_sats, t.fee_usd, t.transaction_type::VARCHAR, (SELECT full_name FROM cryptopay.users WHERE id = t.counterparty_user_id) AS counterparty_name, t.note, t.status::VARCHAR, t.reference_number, t.created_at, t.completed_at
+    RETURN QUERY SELECT t.id, t.amount_usd, t.amount_sats, t.fee_usd, t.transaction_type::VARCHAR, (SELECT u.full_name FROM cryptopay.users u WHERE u.id = t.counterparty_user_id) AS counterparty_name, t.note, t.status::VARCHAR, t.reference_number, t.created_at, t.completed_at
     FROM cryptopay.transactions t WHERE t.id = p_transaction_id;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
