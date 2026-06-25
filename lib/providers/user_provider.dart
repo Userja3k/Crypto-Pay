@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import '../services/breez_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,14 @@ final supabaseClientProvider = Provider((ref) => Supabase.instance.client);
 final supabaseServiceProvider = Provider((ref) {
   final client = ref.watch(supabaseClientProvider);
   return SupabaseService(client);
+});
+
+final breezServiceProvider = Provider((ref) => BreezService());
+final breezInitializedProvider = StateProvider<bool>((ref) => false);
+final breezBalanceProvider = FutureProvider<Balance>((ref) async {
+  final breez = ref.watch(breezServiceProvider);
+  if (!breez.isInitialized) throw Exception('Breez SDK non initialisé');
+  return breez.getBalance();
 });
 
 // Custom Auth State Management

@@ -3,6 +3,9 @@ import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../services/haptic_service.dart';
 import 'send_payment_screen.dart';
+import 'qr_scanner_screen.dart';
+import 'bluetooth_payment_screen.dart';
+import 'nfc_payment_screen.dart';
 
 class PayMenuScreen extends StatelessWidget {
   const PayMenuScreen({super.key});
@@ -28,8 +31,23 @@ class PayMenuScreen extends StatelessWidget {
                 subtitle: 'Caméra plein écran, détection auto',
                 onTap: () {
                   HapticService.selection();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Scanner QR non disponible pour le moment')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => QrScannerScreen(
+                        onScanComplete: (code) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SendPaymentScreen(
+                                recipientId: code,
+                                recipientName: 'QR',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   );
                 },
               ),
@@ -44,8 +62,9 @@ class PayMenuScreen extends StatelessWidget {
                       subtitle: 'Approchez les appareils',
                       onTap: () {
                         HapticService.selection();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Paiement NFC non disponible pour le moment')),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const NfcPaymentScreen()),
                         );
                       },
                     ),
@@ -59,8 +78,9 @@ class PayMenuScreen extends StatelessWidget {
                       subtitle: 'Recherche d\'appareils...',
                       onTap: () {
                         HapticService.selection();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Paiement Bluetooth non disponible pour le moment')),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const BluetoothPaymentScreen()),
                         );
                       },
                     ),

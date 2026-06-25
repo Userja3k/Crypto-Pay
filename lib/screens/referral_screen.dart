@@ -5,6 +5,7 @@ import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
+import '../services/share_service.dart';
 
 class ReferralScreen extends ConsumerWidget {
   const ReferralScreen({super.key});
@@ -42,10 +43,10 @@ class ReferralScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     GlassButton(onPressed: () {
                       HapticService.selection();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Partage non disponible pour le moment')),
-                      );
-                    }, child: const Text('Partager mon code')),
+                      final auth = ref.read(authProvider);
+                      final svc = ShareService();
+                      svc.shareReferralCode(code: code, userName: auth.user?['full_name'] ?? 'Utilisateur');
+                    }, child: const Text('Partager mon code'))
                   ],
                 ),
               ),

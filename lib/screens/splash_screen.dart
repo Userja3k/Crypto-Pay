@@ -1,5 +1,8 @@
+import 'package:breez_sdk/breez_sdk.dart';
+import 'package:breez_sdk/bridge_generated.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../config.dart';
 import '../core/theme.dart';
 import '../providers/user_provider.dart';
 import '../core/widgets/crypto_pay_logo.dart';
@@ -40,6 +43,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
       final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
+        final breez = ref.read(breezServiceProvider);
+        try {
+          if (kBreezApiKey.isNotEmpty) {
+            if (!breez.isInitialized) {
+              await breez.connect(
+                apiKey: kBreezApiKey,
+                breezServer: kBreezServer,
+                chainnotifierUrl: kBreezChainnotifierUrl,
+                network: Network.Testnet,
+              );
+            }
+            ref.read(breezInitializedProvider.notifier).state = true;
+          } else {
+            debugPrint('Breez API key manquante, connexion ignorée.');
+          }
+        } catch (e) {
+          debugPrint('Initialisation Breez échouée: $e');
+          ref.read(breezInitializedProvider.notifier).state = false;
+        }
+      }
+
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>

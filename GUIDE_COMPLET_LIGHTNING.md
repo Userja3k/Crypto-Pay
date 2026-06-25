@@ -316,7 +316,7 @@ Les erreurs courantes:
 
 ## 📋 Checklist d'action
 
-- [ ] Comprendre l'architecture (Lire le guide ci-dessus)
+- [X] Comprendre l'architecture (Lire le guide ci-dessus)
 - [ ] Avoir un nœud LND (Voltage.cloud testnet)
 - [ ] Récupérer `LND_HOST`, `LND_MACAROON`, `LND_CERT`
 - [ ] Ajouter les secrets dans Supabase

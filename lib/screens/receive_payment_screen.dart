@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
@@ -25,17 +26,26 @@ class _ReceivePaymentScreenState extends ConsumerState<ReceivePaymentScreen> {
     HapticService.selection();
 
     try {
-      final authState = ref.read(authProvider);
-      final result = await ref.read(supabaseServiceProvider).createLightningInvoice(
-        userId: authState.user!['user_id'],
-        amountUsd: amount,
+      final amountSats = ((amount / 70000.0) * 100000000).round();
+      if (amountSats <= 0) throw Exception('Montant invalide');
+
+      final breez = ref.read(breezServiceProvider);
+      final response = await breez.createInvoice(
+        amountSats: amountSats,
+        description: 'Facture Crypto-Pay',
       );
-      setState(() => _bolt11 = result['bolt11']);
+
+      setState(() => _bolt11 = response.lnInvoice.bolt11);
       HapticService.success();
     } catch (e) {
       debugPrint('Invoice error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur de génération de facture : $e')),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -152,11 +162,26 @@ class _ReceivePaymentScreenState extends ConsumerState<ReceivePaymentScreen> {
           if (_bolt11 != null) ...[
             const Divider(color: Colors.white10),
             const SizedBox(height: 8),
-            Text(
+            SelectableText(
               _bolt11!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () {
+                    HapticService.selection();
+                    Clipboard.setData(ClipboardData(text: _bolt11!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Facture copiée')),
+                    );
+                  },
+                  icon: const Icon(Icons.copy, size: 18, color: Colors.white70),
+                  label: const Text('Copier', style: TextStyle(color: Colors.white70)),
+                ),
+              ],
             ),
           ],
         ],

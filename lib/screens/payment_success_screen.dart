@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_button.dart';
 import '../services/haptic_service.dart';
+import '../services/share_service.dart';
 import 'home_screen.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
@@ -53,6 +54,8 @@ class PaymentSuccessScreen extends StatelessWidget {
                 isPrimary: false,
                 onPressed: () {
                   HapticService.light();
+                  final svc = ShareService();
+                  svc.sharePaymentReceipt(amount: amount, recipient: recipient, date: DateTime.now().toIso8601String(), transactionId: 'TX-${DateTime.now().millisecondsSinceEpoch}');
                 },
                 child: const Text('Partager le reçu', style: TextStyle(color: Colors.white)),
               ),

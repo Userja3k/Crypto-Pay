@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'glass_container.dart';
 
 class GlassButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+
   final Widget child;
   final bool isPrimary;
 

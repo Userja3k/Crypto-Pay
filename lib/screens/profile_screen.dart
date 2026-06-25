@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../providers/user_provider.dart';
+import '../services/share_service.dart';
 import '../services/haptic_service.dart';
 import 'transaction_history_screen.dart';
 
@@ -29,7 +30,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             _buildStatsSection(user),
             const SizedBox(height: 32),
-            _buildActionsList(context),
+            _buildActionsList(context, ref),
           ],
         ),
       ),
@@ -113,7 +114,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionsList(BuildContext context) {
+  Widget _buildActionsList(BuildContext context, WidgetRef ref) {
     return GlassContainer(
       borderRadius: 24,
       child: Column(
@@ -124,9 +125,7 @@ class ProfileScreen extends ConsumerWidget {
           }),
           _actionTile(Icons.account_balance_wallet_outlined, 'Mes portefeuilles', () {
             HapticService.selection();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Portefeuilles non disponibles pour le moment')),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
           }),
           _actionTile(Icons.qr_code_scanner, 'Mon code QR', () {
             HapticService.selection();
@@ -134,11 +133,11 @@ class ProfileScreen extends ConsumerWidget {
               const SnackBar(content: Text('Code QR disponible dans Recevoir')),
             );
           }),
-          _actionTile(Icons.share, 'Partager mon profil', () {
+          _actionTile(Icons.share, 'Partager mon profil', () async {
             HapticService.selection();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Partage non disponible pour le moment')),
-            );
+            final auth = ref.read(authProvider);
+            final svc = ShareService();
+            svc.shareProfile(userName: auth.user?['full_name'] ?? 'Utilisateur', userId: auth.user?['id'] ?? '-', referralCode: auth.user?['referral_code'] ?? '-');
           }),
         ],
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:breez_sdk/breez_sdk.dart';
+import 'package:breez_sdk/bridge_generated.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../services/haptic_service.dart';
@@ -25,6 +27,11 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
   double _slideProgress = 0.0;
   final String _paymentMethod = 'internal'; // 'internal' or 'lightning'
 
+  bool _isBolt11Invoice(String destination) {
+    final normalized = destination.toLowerCase();
+    return normalized.startsWith('lnbc') || normalized.startsWith('lntb') || normalized.startsWith('lnsb') || normalized.startsWith('lnbcrt');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -41,28 +48,62 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
     HapticService.medium();
 
     try {
-      final authState = ref.read(authProvider);
-      final result = await ref.read(supabaseServiceProvider).sendPayment(
-        senderUserId: authState.user!['user_id'],
-        amountUsd: amount,
-        destinationType: _paymentMethod,
-        destinationIdentifier: widget.recipientId ?? _destinationController.text,
-        note: _noteController.text,
-      );
+      final destination = (widget.recipientId ?? _destinationController.text).trim();
+      if (destination.isEmpty) throw Exception('Destinataire manquant');
 
-      if (result['status'] == 'completed') {
-        HapticService.success();
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => PaymentSuccessScreen(amount: amount, recipient: widget.recipientName ?? _destinationController.text))
-          );
+      if (_isBolt11Invoice(destination)) {
+        final breez = ref.read(breezServiceProvider);
+
+        final invoice = await breez.parseInvoice(destination);
+        final bool hasAmount = invoice.amountMsat != null;
+        final int? amountMsat = hasAmount ? null : (amount > 0 ? (amount * 1000).round() : null);
+
+        final response = await breez.sendPayment(
+          bolt11: destination,
+          useTrampoline: true,
+          amountMsat: amountMsat,
+          label: _noteController.text.isNotEmpty ? _noteController.text : null,
+        );
+
+        if (response.payment.status == PaymentStatus.Complete) {
+          HapticService.success();
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => PaymentSuccessScreen(amount: amount, recipient: widget.recipientName ?? destination)),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Paiement échoué: ${response.payment.error ?? 'Erreur inconnue'}')),
+            );
+          }
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur: ${result['message']}')),
-          );
+        final authState = ref.read(authProvider);
+        final result = await ref.read(supabaseServiceProvider).sendPayment(
+          senderUserId: authState.user!['user_id'],
+          amountUsd: amount,
+          destinationType: _paymentMethod,
+          destinationIdentifier: destination,
+          note: _noteController.text,
+        );
+
+        if (result['status'] == 'completed') {
+          HapticService.success();
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => PaymentSuccessScreen(amount: amount, recipient: widget.recipientName ?? destination)),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erreur: ${result['message']}')),
+            );
+          }
         }
       }
     } catch (e) {
