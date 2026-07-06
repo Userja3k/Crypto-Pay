@@ -135,6 +135,23 @@ class SupabaseService {
     return response is Map ? response as Map<String, dynamic> : {};
   }
 
+  Future<Map<String, dynamic>> depositFunds({
+    required String userId,
+    required double amountUsd,
+    String? note,
+  }) async {
+    final response = await _client.rpc('deposit_funds', params: {
+      'p_user_id': userId,
+      'p_amount_usd': amountUsd,
+      'p_note': note,
+    });
+
+    if (response is List && response.isNotEmpty) {
+      return response.first as Map<String, dynamic>;
+    }
+    return response is Map ? response as Map<String, dynamic> : {};
+  }
+
   Future<List<Map<String, dynamic>>> getTransactionHistory(String userId) async {
     final response = await _client.rpc('get_transaction_history', params: {
       'p_user_id': userId,

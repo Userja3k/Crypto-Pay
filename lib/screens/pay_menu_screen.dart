@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../services/haptic_service.dart';
+import 'deposit_screen.dart';
 import 'send_payment_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'bluetooth_payment_screen.dart';
@@ -95,7 +96,7 @@ class PayMenuScreen extends StatelessWidget {
                 subtitle: 'Partenaire à l\'application (ex: Binance)',
                 onTap: () {
                   HapticService.selection();
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DepositScreen()));
                 },
               ),
             ],

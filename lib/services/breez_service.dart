@@ -115,10 +115,12 @@ class BreezService {
   Future<Balance> getBalance() async {
     if (!_initialized) throw Exception('Breez SDK not initialized');
     final nodeInfo = await _sdk.nodeInfo();
-    if (nodeInfo == null) return Balance(onchainBalanceMsat: 0, channelBalanceMsat: 0);
+    if (nodeInfo == null) {
+      return Balance(onchainBalanceMsat: 0, channelBalanceMsat: 0);
+    }
     return Balance(
-      onchainBalanceMsat: nodeInfo.onchainBalanceMsat ?? 0,
-      channelBalanceMsat: nodeInfo.channelsBalanceMsat ?? 0,
+      onchainBalanceMsat: nodeInfo.onchainBalanceMsat,
+      channelBalanceMsat: nodeInfo.channelsBalanceMsat,
     );
   }
 
