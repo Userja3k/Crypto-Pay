@@ -27,7 +27,7 @@ class SupabaseService {
       'p_user_role': userRole,
       'p_parent_id': parentId,
     });
-    
+
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -50,7 +50,7 @@ class SupabaseService {
       'p_max_per_day_usd': maxPerDay,
       'p_max_per_month_usd': maxPerMonth,
     });
-    
+
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -72,7 +72,7 @@ class SupabaseService {
       'p_identifier': identifier,
       'p_pin_hash': pinHash,
     });
-    
+
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -111,7 +111,7 @@ class SupabaseService {
       'p_destination_identifier': destinationIdentifier,
       'p_note': note,
     });
-    
+
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -128,7 +128,7 @@ class SupabaseService {
       'p_amount_usd': amountUsd,
       'p_memo': memo,
     });
-    
+
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
     }
@@ -152,7 +152,8 @@ class SupabaseService {
     return response is Map ? response as Map<String, dynamic> : {};
   }
 
-  Future<List<Map<String, dynamic>>> getTransactionHistory(String userId) async {
+  Future<List<Map<String, dynamic>>> getTransactionHistory(
+      String userId) async {
     final response = await _client.rpc('get_transaction_history', params: {
       'p_user_id': userId,
       'p_limit': 50,
@@ -160,18 +161,134 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response as List);
   }
 
-  Future<List<Map<String, dynamic>>> getPendingApprovals(String parentUserId) async {
+  Future<List<Map<String, dynamic>>> getPendingApprovals(
+      String parentUserId) async {
     final response = await _client.rpc('get_pending_approvals', params: {
       'p_parent_user_id': parentUserId,
     });
     return List<Map<String, dynamic>>.from(response as List);
   }
 
-  Future<void> approveTransaction(String parentUserId, String approvalId, bool approve) async {
+  Future<void> approveTransaction(
+      String parentUserId, String approvalId, bool approve) async {
     await _client.rpc('approve_child_transaction', params: {
       'p_parent_user_id': parentUserId,
       'p_pending_approval_id': approvalId,
       'p_approve': approve,
     });
+  }
+
+  Future<Map<String, dynamic>> getReferralInfo(String userId) async {
+    final response = await _client.rpc('get_referral_info', params: {
+      'p_user_id': userId,
+    });
+
+    if (response is List && response.isNotEmpty) {
+      return response.first as Map<String, dynamic>;
+    }
+    return response is Map ? response as Map<String, dynamic> : {};
+  }
+
+  Future<List<Map<String, dynamic>>> listReferredUsers(String userId) async {
+    final response = await _client.rpc('list_referred_users', params: {
+      'p_user_id': userId,
+    });
+    return List<Map<String, dynamic>>.from(response as List);
+  }
+
+  Future<bool> claimReferralBonus(String referredUserId) async {
+    final response = await _client.rpc('claim_referral_bonus', params: {
+      'p_referred_user_id': referredUserId,
+    });
+    return response as bool? ?? false;
+  }
+
+  Future<Map<String, dynamic>> createLnurlWithdraw({
+    required String userId,
+    required int amountSats,
+    String? description,
+  }) async {
+    final response = await _client.rpc('create_lnurl_withdraw', params: {
+      'p_user_id': userId,
+      'p_amount_sats': amountSats,
+      'p_description': description,
+    });
+
+    if (response is List && response.isNotEmpty) {
+      return response.first as Map<String, dynamic>;
+    }
+    return response is Map ? response as Map<String, dynamic> : {};
+  }
+
+  Future<Map<String, dynamic>> createLnurlPay({
+    required String userId,
+    int? fixedAmountSats,
+    String? description,
+    bool requiresComment = false,
+    int expiresInDays = 365,
+  }) async {
+    final response = await _client.rpc('create_lnurl_pay', params: {
+      'p_user_id': userId,
+      'p_fixed_amount_sats': fixedAmountSats,
+      'p_description': description,
+      'p_requires_comment': requiresComment,
+      'p_expires_in_days': expiresInDays,
+    });
+
+    if (response is List && response.isNotEmpty) {
+      return response.first as Map<String, dynamic>;
+    }
+    return response is Map ? response as Map<String, dynamic> : {};
+  }
+
+  Future<Map<String, dynamic>> redeemLnurlWithdraw({
+    required String lnurlSecret,
+    required int amountSats,
+  }) async {
+    final response = await _client.rpc('redeem_lnurl_withdraw', params: {
+      'p_lnurl_secret': lnurlSecret,
+      'p_amount_sats': amountSats,
+    });
+
+    if (response is List && response.isNotEmpty) {
+      return response.first as Map<String, dynamic>;
+    }
+    return response is Map ? response as Map<String, dynamic> : {};
+  }
+
+  Future<bool> sendChildInvitation({
+    required String parentUserId,
+    required String childUserId,
+    required String invitationCode,
+  }) async {
+    final response = await _client.rpc('send_child_invitation', params: {
+      'p_parent_user_id': parentUserId,
+      'p_child_user_id': childUserId,
+      'p_invitation_code': invitationCode,
+    });
+    return response as bool? ?? false;
+  }
+
+  Future<Map<String, dynamic>> activateChildWithCode({
+    required String childUserId,
+    required String invitationCode,
+    required String email,
+    required String phone,
+    required String pinHash,
+    required String pinSalt,
+  }) async {
+    final response = await _client.rpc('activate_child_with_code', params: {
+      'p_child_user_id': childUserId,
+      'p_invitation_code': invitationCode,
+      'p_email': email,
+      'p_phone': phone,
+      'p_pin_hash': pinHash,
+      'p_pin_salt': pinSalt,
+    });
+
+    if (response is List && response.isNotEmpty) {
+      return response.first as Map<String, dynamic>;
+    }
+    return response is Map ? response as Map<String, dynamic> : {};
   }
 }

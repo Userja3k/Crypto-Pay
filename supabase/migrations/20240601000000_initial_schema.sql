@@ -233,6 +233,36 @@ CREATE TABLE IF NOT EXISTS cryptopay.referrals (
     UNIQUE(referred_user_id)
 );
 
+-- TABLE: lnurl_withdraw
+CREATE TABLE IF NOT EXISTS cryptopay.lnurl_withdraw (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES cryptopay.users(id) ON DELETE CASCADE,
+    lnurl_secret VARCHAR(64) UNIQUE NOT NULL,
+    amount_sats BIGINT,
+    description TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TABLE: lnurl_pay
+CREATE TABLE IF NOT EXISTS cryptopay.lnurl_pay (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES cryptopay.users(id) ON DELETE CASCADE,
+    lnurl_secret VARCHAR(64) UNIQUE NOT NULL,
+    fixed_amount_sats BIGINT,
+    description TEXT,
+    requires_comment BOOLEAN DEFAULT FALSE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TABLE: wallet_backups
+CREATE TABLE IF NOT EXISTS cryptopay.wallet_backups (
+    user_id UUID PRIMARY KEY REFERENCES cryptopay.users(id) ON DELETE CASCADE,
+    encrypted_seed TEXT NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- TABLE: notifications
 CREATE TABLE IF NOT EXISTS cryptopay.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -301,7 +331,13 @@ CREATE OR REPLACE FUNCTION cryptopay.register_user(
     p_parent_id UUID DEFAULT NULL
 )
 RETURNS TABLE(user_id UUID, account_id UUID, referral_code VARCHAR(20), message TEXT) AS $$
-DECLARE v_user_id UUID; v_account_id UUID; v_referral_code VARCHAR(20); v_referrer_id UUID;
+DECLARE
+    v_user_id UUID;
+    v_account_id UUID;
+    v_referral_code VARCHAR(20);
+    v_referrer_id UUID;
+    v_actual_role cryptopay.user_role_enum;
+    v_age INT;
 BEGIN
     IF EXISTS (SELECT 1 FROM cryptopay.users WHERE email = p_email AND deleted_at IS NULL) THEN
         RETURN QUERY SELECT NULL::UUID, NULL::UUID, NULL::VARCHAR, 'Email déjà utilisé'::TEXT; RETURN;
@@ -309,8 +345,16 @@ BEGIN
     IF EXISTS (SELECT 1 FROM cryptopay.users WHERE phone = p_phone AND deleted_at IS NULL) THEN
         RETURN QUERY SELECT NULL::UUID, NULL::UUID, NULL::VARCHAR, 'Téléphone déjà utilisé'::TEXT; RETURN;
     END IF;
-    IF p_user_role = 'adult' AND p_birth_date > CURRENT_DATE - INTERVAL '18 years' THEN
-        RETURN QUERY SELECT NULL::UUID, NULL::UUID, NULL::VARCHAR, 'Vous devez avoir 18 ans ou plus'::TEXT; RETURN;
+
+    v_age := EXTRACT(YEAR FROM age(CURRENT_DATE, p_birth_date))::INT;
+    IF v_age < 18 THEN
+        v_actual_role := 'child';
+    ELSE
+        v_actual_role := COALESCE(p_user_role, 'adult');
+    END IF;
+
+    IF v_actual_role = 'child' AND p_parent_id IS NULL AND p_referral_code IS NULL THEN
+        RETURN QUERY SELECT NULL::UUID, NULL::UUID, NULL::VARCHAR, 'Un enfant doit avoir un parent'::TEXT; RETURN;
     END IF;
 
     v_referral_code := UPPER(SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 8));
@@ -318,11 +362,22 @@ BEGIN
         SELECT id INTO v_referrer_id FROM cryptopay.users WHERE referral_code = p_referral_code AND deleted_at IS NULL;
     END IF;
 
-    INSERT INTO cryptopay.users (email, phone, full_name, birth_date, encrypted_pin_hash, pin_salt, referral_code, referred_by, user_role, parent_id)
-    VALUES (p_email, p_phone, p_full_name, p_birth_date, p_pin_hash, p_pin_salt, v_referral_code, v_referrer_id, p_user_role, p_parent_id)
+    INSERT INTO cryptopay.users (
+        email, phone, full_name, birth_date, encrypted_pin_hash, pin_salt,
+        referral_code, referred_by, user_role, parent_id, is_active
+    )
+    VALUES (
+        p_email, p_phone, p_full_name, p_birth_date, p_pin_hash, p_pin_salt,
+        v_referral_code, v_referrer_id, v_actual_role,
+        CASE WHEN v_actual_role = 'child' THEN COALESCE(p_parent_id, v_referrer_id) ELSE p_parent_id END,
+        CASE WHEN v_actual_role = 'adult' THEN TRUE ELSE FALSE END
+    )
     RETURNING id INTO v_user_id;
 
     INSERT INTO cryptopay.accounts (user_id) VALUES (v_user_id) RETURNING id INTO v_account_id;
+
+    INSERT INTO cryptopay.lnurl_withdraw (user_id, lnurl_secret, description, expires_at)
+    VALUES (v_user_id, cryptopay.generate_lnurl_secret(), 'Dépôt principal - ' || p_full_name, NOW() + INTERVAL '1 year');
 
     IF v_referrer_id IS NOT NULL THEN
         INSERT INTO cryptopay.referrals (referrer_user_id, referred_user_id, status) VALUES (v_referrer_id, v_user_id, 'pending');
@@ -330,6 +385,38 @@ BEGIN
 
     RETURN QUERY SELECT v_user_id, v_account_id, v_referral_code, 'Compte créé avec succès'::TEXT;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.register_user(
+    p_email VARCHAR(255),
+    p_phone VARCHAR(50),
+    p_full_name VARCHAR(255),
+    p_birth_date DATE,
+    p_pin_hash TEXT,
+    p_pin_salt TEXT DEFAULT NULL,
+    p_referral_code VARCHAR(20) DEFAULT NULL,
+    p_user_role cryptopay.user_role_enum DEFAULT 'adult',
+    p_parent_id UUID DEFAULT NULL
+)
+RETURNS TABLE(user_id UUID, account_id UUID, referral_code VARCHAR(20), message TEXT)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM cryptopay.register_user(
+        p_email,
+        p_phone,
+        p_full_name,
+        p_birth_date,
+        p_pin_hash,
+        p_pin_salt,
+        p_referral_code,
+        p_user_role,
+        p_parent_id
+    );
+END;
+$$;
 
 -- 1.5 get_user_salt
 CREATE OR REPLACE FUNCTION cryptopay.get_user_salt(p_identifier VARCHAR(255))
@@ -728,9 +815,9 @@ BEGIN
     SELECT * INTO v_ref FROM cryptopay.referrals WHERE referred_user_id = p_referred_user_id AND status = 'pending';
     IF NOT FOUND THEN RETURN FALSE; END IF;
     UPDATE cryptopay.referrals SET status = 'completed', completed_at = NOW() WHERE id = v_ref.id;
-    -- Créditer les bonus
     UPDATE cryptopay.accounts SET balance_usd = balance_usd + 5 WHERE user_id = v_ref.referrer_user_id;
     UPDATE cryptopay.accounts SET balance_usd = balance_usd + 2 WHERE user_id = v_ref.referred_user_id;
+    UPDATE cryptopay.users SET total_referral_bonus_usd = total_referral_bonus_usd + 5 WHERE id = v_ref.referrer_user_id;
     RETURN TRUE;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -783,7 +870,120 @@ BEGIN
     RETURN v_id;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 30. get_notifications
+-- 30. generate_lnurl_secret
+CREATE OR REPLACE FUNCTION cryptopay.generate_lnurl_secret()
+RETURNS VARCHAR(64) AS $$
+BEGIN
+    RETURN UPPER(SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 32));
+END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 31. create_lnurl_pay
+CREATE OR REPLACE FUNCTION cryptopay.create_lnurl_pay(
+    p_user_id UUID,
+    p_fixed_amount_sats BIGINT DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_requires_comment BOOLEAN DEFAULT FALSE,
+    p_expires_in_days INT DEFAULT 365
+)
+RETURNS TABLE(lnurl_secret VARCHAR(64), lnurl_url TEXT, expires_at TIMESTAMPTZ) AS $$
+DECLARE
+    v_secret VARCHAR(64);
+    v_expires TIMESTAMPTZ;
+    v_domain TEXT;
+BEGIN
+    SELECT value INTO v_domain FROM cryptopay.settings WHERE key = 'app_domain';
+    IF v_domain IS NULL THEN
+        v_domain := 'https://crypto-pay.app';
+    END IF;
+
+    v_secret := cryptopay.generate_lnurl_secret();
+    v_expires := NOW() + (p_expires_in_days || ' days')::INTERVAL;
+
+    INSERT INTO cryptopay.lnurl_pay (user_id, lnurl_secret, fixed_amount_sats, description, requires_comment, expires_at)
+    VALUES (p_user_id, v_secret, p_fixed_amount_sats, p_description, p_requires_comment, v_expires);
+
+    RETURN QUERY SELECT v_secret, v_domain || '/.well-known/lnurl/pay/' || v_secret, v_expires;
+END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 32. get_lnurl_pay_info
+CREATE OR REPLACE FUNCTION cryptopay.get_lnurl_pay_info(p_lnurl_secret VARCHAR(64))
+RETURNS TABLE(
+    user_id UUID,
+    fixed_amount_sats BIGINT,
+    description TEXT,
+    requires_comment BOOLEAN,
+    expires_at TIMESTAMPTZ,
+    is_valid BOOLEAN
+) AS $$
+DECLARE v_record cryptopay.lnurl_pay%ROWTYPE;
+BEGIN
+    SELECT * INTO v_record FROM cryptopay.lnurl_pay WHERE lnurl_secret = p_lnurl_secret AND expires_at > NOW();
+
+    IF NOT FOUND THEN
+        RETURN QUERY SELECT NULL::UUID, NULL::BIGINT, NULL::TEXT, FALSE, NULL::TIMESTAMPTZ, FALSE;
+        RETURN;
+    END IF;
+
+    RETURN QUERY SELECT v_record.user_id, v_record.fixed_amount_sats, v_record.description, v_record.requires_comment, v_record.expires_at, TRUE;
+END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 33. record_lnurl_pay_payment
+CREATE OR REPLACE FUNCTION cryptopay.record_lnurl_pay_payment(
+    p_lnurl_secret VARCHAR(64),
+    p_amount_sats BIGINT,
+    p_payment_hash VARCHAR(64),
+    p_comment TEXT DEFAULT NULL
+)
+RETURNS TABLE(success BOOLEAN, message TEXT) AS $$
+DECLARE
+    v_pay cryptopay.lnurl_pay%ROWTYPE;
+    v_tx_id UUID;
+    v_rate DECIMAL;
+BEGIN
+    SELECT * INTO v_pay FROM cryptopay.lnurl_pay WHERE lnurl_secret = p_lnurl_secret AND expires_at > NOW();
+
+    IF NOT FOUND THEN
+        RETURN QUERY SELECT FALSE, 'LNURL invalide ou expiré'::TEXT;
+        RETURN;
+    END IF;
+
+    IF v_pay.fixed_amount_sats IS NOT NULL AND v_pay.fixed_amount_sats <> p_amount_sats THEN
+        RETURN QUERY SELECT FALSE, 'Montant incorrect'::TEXT;
+        RETURN;
+    END IF;
+
+    SELECT rate INTO v_rate FROM cryptopay.exchange_rates WHERE from_currency = 'BTC' AND to_currency = 'USD';
+
+    INSERT INTO cryptopay.transactions (
+        account_id, transaction_type, amount_usd, amount_sats, lightning_payment_hash, note, status, completed_at
+    ) VALUES (
+        (SELECT id FROM cryptopay.accounts WHERE user_id = v_pay.user_id),
+        'receive',
+        (p_amount_sats / 100000000.0) * v_rate,
+        p_amount_sats,
+        p_payment_hash,
+        COALESCE(v_pay.description, 'Paiement via LNURL-Pay') || COALESCE(' (' || p_comment || ')', ''),
+        'completed',
+        NOW()
+    ) RETURNING id INTO v_tx_id;
+
+    UPDATE cryptopay.accounts
+    SET balance_usd = balance_usd + ((p_amount_sats / 100000000.0) * v_rate),
+        monthly_received_usd = monthly_received_usd + ((p_amount_sats / 100000000.0) * v_rate)
+    WHERE user_id = v_pay.user_id;
+
+    PERFORM cryptopay.create_notification(
+        v_pay.user_id,
+        '💰 Paiement reçu',
+        'Vous avez reçu ' || (p_amount_sats / 1000) || ' sats via LNURL-Pay',
+        'payment',
+        jsonb_build_object('transaction_id', v_tx_id, 'amount_sats', p_amount_sats)
+    );
+
+    RETURN QUERY SELECT TRUE, 'Paiement enregistré'::TEXT;
+END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 34. get_notifications
 CREATE OR REPLACE FUNCTION cryptopay.get_notifications(p_user_id UUID, p_limit INT DEFAULT 20) RETURNS TABLE(id UUID, title VARCHAR, body TEXT, type VARCHAR, is_read BOOLEAN, created_at TIMESTAMPTZ) AS $$
 BEGIN
     RETURN QUERY SELECT n.id, n.title, n.body, n.type, n.is_read, n.created_at FROM cryptopay.notifications n WHERE n.user_id = p_user_id ORDER BY created_at DESC LIMIT p_limit;
