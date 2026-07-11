@@ -1,7 +1,12 @@
+// lib/providers/user_provider.dart
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/breez_service.dart';
+import '../services/nfc_service.dart';
+import '../services/bluetooth_service.dart';
+import '../services/payment_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,20 +17,48 @@ final supabaseServiceProvider = Provider((ref) {
   return SupabaseService(client);
 });
 
+// ✅ BreezService - UNIQUE
 final breezServiceProvider = Provider((ref) => BreezService());
+
 final breezInitializedProvider = StateProvider<bool>((ref) => false);
+
 final breezBalanceProvider = FutureProvider<Balance>((ref) async {
   final breez = ref.watch(breezServiceProvider);
   if (!breez.isInitialized) throw Exception('Breez SDK non initialisé');
   return breez.getBalance();
 });
 
-// Custom Auth State Management
+// ════════════════════════════════════════════════════════
+// NFC & BLUETOOTH
+// ════════════════════════════════════════════════════════
+
+final nfcServiceProvider = Provider((ref) => NfcService());
+final bluetoothServiceProvider = Provider((ref) => BluetoothService());
+
+final paymentServiceProvider = Provider((ref) {
+  final nfc = ref.watch(nfcServiceProvider);
+  final bluetooth = ref.watch(bluetoothServiceProvider);
+  final breez = ref.watch(breezServiceProvider);
+  final supabase = ref.watch(supabaseServiceProvider);
+  return PaymentService(
+    nfcService: nfc,
+    bluetoothService: bluetooth,
+    breezService: breez,
+    supabaseService: supabase,
+  );
+});
+
+// ════════════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════════════
+
 class AuthState {
   final Map<String, dynamic>? user;
   final bool isAuthenticated;
 
   AuthState({this.user, this.isAuthenticated = false});
+  
+  String? get userId => user?['user_id'] as String?;
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
@@ -69,4 +102,26 @@ final transactionHistoryProvider = FutureProvider.family<List<Map<String, dynami
 final pendingApprovalsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, parentUserId) async {
   final service = ref.watch(supabaseServiceProvider);
   return service.getPendingApprovals(parentUserId);
+});
+
+class NotificationsNotifier extends StateNotifier<List<Map<String, dynamic>>> {
+  final Ref _ref;
+
+  NotificationsNotifier(this._ref) : super([]) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    final auth = _ref.read(authProvider);
+    final userId = auth.userId;
+    if (userId == null) return;
+
+    final service = _ref.read(supabaseServiceProvider);
+    final initial = await service.getNotifications(userId);
+    state = initial;
+  }
+}
+
+final notificationsProvider = StateNotifierProvider<NotificationsNotifier, List<Map<String, dynamic>>>((ref) {
+  return NotificationsNotifier(ref);
 });

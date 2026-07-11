@@ -78,10 +78,41 @@ async function handlePaymentReceived(data: any) {
     amount_sats: amountSats,
   }).eq('lightning_payment_hash', payment_hash);
 
-  await supabase.rpc('confirm_lightning_payment', {
-    p_payment_hash: payment_hash,
-    p_preimage: preimage,
-  });
+  // Try RPC confirm first
+  try {
+    const rpcRes = await supabase.rpc('confirm_lightning_payment', {
+      p_payment_hash: payment_hash,
+      p_preimage: preimage,
+    });
+
+    // If RPC did not match any row, try fallback matching heuristics
+    if (!rpcRes) {
+      // Try matching by bolt11 if present in payload
+      const possibleBolt11 = data.bolt11 || data.invoice || data.request || null;
+      if (possibleBolt11) {
+        await supabase.from('transactions').update({
+          status: 'completed',
+          lightning_preimage: preimage,
+          completed_at: new Date().toISOString(),
+          amount_sats: amountSats,
+        }).eq('lightning_bolt11', possibleBolt11);
+      } else {
+        // Fallback: find most recent pending transaction with same amount
+        const { data: rows } = await supabase.from('transactions').select('id').eq('amount_sats', amountSats).eq('status', 'pending').order('created_at', { ascending: false }).limit(1);
+        if (rows && rows.length > 0) {
+          const txId = rows[0].id;
+          await supabase.from('transactions').update({
+            status: 'completed',
+            lightning_preimage: preimage,
+            completed_at: new Date().toISOString(),
+            amount_sats: amountSats,
+          }).eq('id', txId);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('RPC confirm_lightning_payment failed:', e);
+  }
 }
 
 async function handlePaymentSent(data: any) {

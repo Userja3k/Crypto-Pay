@@ -7,143 +7,315 @@ import '../services/nfc_service.dart';
 import '../services/payment_service.dart';
 import 'user_provider.dart';
 
-final nfcServiceProvider = Provider((ref) => NfcService());
-final bluetoothServiceProvider = Provider((ref) => BluetoothService());
+// ════════════════════════════════════════════════════════
+// ÉTATS NFC
+// ════════════════════════════════════════════════════════
 
-final paymentServiceProvider = Provider((ref) {
-  final nfc = ref.watch(nfcServiceProvider);
-  final bluetooth = ref.watch(bluetoothServiceProvider);
-  final breez = ref.watch(breezServiceProvider);
-  return PaymentService(
-    nfcService: nfc,
-    bluetoothService: bluetooth,
-    breezService: breez,
-  );
-});
-
-class PaymentState {
+class NfcPaymentState {
   final bool isLoading;
   final String? paymentHash;
   final int? amountSats;
   final String? error;
-  final PaymentStatus status;
+  final String? counterpartyName;
+  final NfcStatus status;
 
-  const PaymentState({
+  const NfcPaymentState({
     this.isLoading = false,
     this.paymentHash,
     this.amountSats,
     this.error,
-    this.status = PaymentStatus.idle,
+    this.counterpartyName,
+    this.status = NfcStatus.idle,
   });
 
-  factory PaymentState.loading() => const PaymentState(isLoading: true, status: PaymentStatus.loading);
-  factory PaymentState.success(String hash, int amount) => PaymentState(
+  factory NfcPaymentState.loading() => const NfcPaymentState(
+        isLoading: true,
+        status: NfcStatus.loading,
+      );
+
+  factory NfcPaymentState.success(String hash, int amount,
+          {String? counterparty}) =>
+      NfcPaymentState(
         paymentHash: hash,
         amountSats: amount,
-        status: PaymentStatus.success,
+        counterpartyName: counterparty,
+        status: NfcStatus.success,
       );
-  factory PaymentState.failure(String error) => PaymentState(
-        error: error,
-        status: PaymentStatus.failure,
-      );
-  factory PaymentState.idle() => const PaymentState();
 
-  PaymentState copyWith({
+  factory NfcPaymentState.failure(String error) => NfcPaymentState(
+        error: error,
+        status: NfcStatus.failure,
+      );
+
+  factory NfcPaymentState.idle() => const NfcPaymentState();
+
+  NfcPaymentState copyWith({
     bool? isLoading,
     String? paymentHash,
     int? amountSats,
     String? error,
-    PaymentStatus? status,
+    String? counterpartyName,
+    NfcStatus? status,
   }) {
-    return PaymentState(
+    return NfcPaymentState(
       isLoading: isLoading ?? this.isLoading,
       paymentHash: paymentHash ?? this.paymentHash,
       amountSats: amountSats ?? this.amountSats,
       error: error ?? this.error,
+      counterpartyName: counterpartyName ?? this.counterpartyName,
       status: status ?? this.status,
     );
   }
 }
 
-enum PaymentStatus { idle, loading, success, failure }
+enum NfcStatus { idle, loading, success, failure }
 
-final nfcPaymentProvider = StateNotifierProvider<NfcPaymentNotifier, PaymentState>((ref) {
+final nfcPaymentProvider =
+    StateNotifierProvider<NfcPaymentNotifier, NfcPaymentState>((ref) {
   return NfcPaymentNotifier(ref);
 });
 
-class NfcPaymentNotifier extends StateNotifier<PaymentState> {
+class NfcPaymentNotifier extends StateNotifier<NfcPaymentState> {
   final Ref _ref;
-  NfcPaymentNotifier(this._ref) : super(const PaymentState());
+  NfcPaymentNotifier(this._ref) : super(NfcPaymentState.idle());
 
   Future<void> payWithNfc({
     required int amountSats,
     String? note,
   }) async {
-    state = PaymentState.loading();
+    final authState = _ref.read(authProvider);
+    final userId = authState.userId;
+    if (userId == null) {
+      state = NfcPaymentState.failure('Utilisateur non authentifié');
+      return;
+    }
+
+    state = NfcPaymentState.loading();
 
     try {
       final paymentService = _ref.read(paymentServiceProvider);
       final result = await paymentService.payWithNfc(
         amountSats: amountSats,
+        userId: userId,
+        note: note,
+        requireConfirmation: true,
+      );
+
+      if (result.success) {
+        state = NfcPaymentState.success(
+          result.paymentHash ?? '',
+          result.amountSats ?? 0,
+          counterparty: result.counterpartyName,
+        );
+      } else {
+        state = NfcPaymentState.failure(result.error ?? 'Erreur NFC inconnue');
+      }
+    } catch (e) {
+      state = NfcPaymentState.failure(e.toString());
+    }
+  }
+
+  Future<void> receiveWithNfc({
+    required int amountSats,
+    String? note,
+  }) async {
+    final authState = _ref.read(authProvider);
+    final userId = authState.userId;
+    final userName = authState.user?['full_name'] as String? ?? 'Utilisateur';
+
+    if (userId == null) {
+      state = NfcPaymentState.failure('Utilisateur non authentifié');
+      return;
+    }
+
+    state = NfcPaymentState.loading();
+
+    try {
+      final paymentService = _ref.read(paymentServiceProvider);
+      final result = await paymentService.receiveWithNfc(
+        amountSats: amountSats,
+        userId: userId,
+        userName: userName,
         note: note,
       );
 
       if (result.success) {
-        state = PaymentState.success(result.paymentHash ?? '', result.amountSats ?? 0);
+        state = NfcPaymentState.success(
+          result.paymentHash ?? '',
+          result.amountSats ?? 0,
+          counterparty: result.counterpartyName,
+        );
       } else {
-        state = PaymentState.failure(result.error ?? 'Erreur NFC inconnue');
+        state = NfcPaymentState.failure(result.error ?? 'Erreur NFC inconnue');
       }
     } catch (e) {
-      state = PaymentState.failure(e.toString());
+      state = NfcPaymentState.failure(e.toString());
     }
   }
 
   void reset() {
-    state = PaymentState.idle();
+    state = NfcPaymentState.idle();
   }
-
 }
 
-final bluetoothPaymentProvider = StateNotifierProvider<BluetoothPaymentNotifier, PaymentState>((ref) {
+// ════════════════════════════════════════════════════════
+// ÉTATS BLUETOOTH
+// ════════════════════════════════════════════════════════
+
+class BluetoothPaymentState {
+  final bool isLoading;
+  final String? paymentHash;
+  final int? amountSats;
+  final String? error;
+  final String? counterpartyName;
+  final BluetoothStatus status;
+
+  const BluetoothPaymentState({
+    this.isLoading = false,
+    this.paymentHash,
+    this.amountSats,
+    this.error,
+    this.counterpartyName,
+    this.status = BluetoothStatus.idle,
+  });
+
+  factory BluetoothPaymentState.loading() => const BluetoothPaymentState(
+        isLoading: true,
+        status: BluetoothStatus.loading,
+      );
+
+  factory BluetoothPaymentState.success(String hash, int amount,
+          {String? counterparty}) =>
+      BluetoothPaymentState(
+        paymentHash: hash,
+        amountSats: amount,
+        counterpartyName: counterparty,
+        status: BluetoothStatus.success,
+      );
+
+  factory BluetoothPaymentState.failure(String error) => BluetoothPaymentState(
+        error: error,
+        status: BluetoothStatus.failure,
+      );
+
+  factory BluetoothPaymentState.idle() => const BluetoothPaymentState();
+
+  BluetoothPaymentState copyWith({
+    bool? isLoading,
+    String? paymentHash,
+    int? amountSats,
+    String? error,
+    String? counterpartyName,
+    BluetoothStatus? status,
+  }) {
+    return BluetoothPaymentState(
+      isLoading: isLoading ?? this.isLoading,
+      paymentHash: paymentHash ?? this.paymentHash,
+      amountSats: amountSats ?? this.amountSats,
+      error: error ?? this.error,
+      counterpartyName: counterpartyName ?? this.counterpartyName,
+      status: status ?? this.status,
+    );
+  }
+}
+
+enum BluetoothStatus { idle, loading, success, failure }
+
+final bluetoothPaymentProvider =
+    StateNotifierProvider<BluetoothPaymentNotifier, BluetoothPaymentState>(
+        (ref) {
   return BluetoothPaymentNotifier(ref);
 });
 
-class BluetoothPaymentNotifier extends StateNotifier<PaymentState> {
+class BluetoothPaymentNotifier extends StateNotifier<BluetoothPaymentState> {
   final Ref _ref;
-  BluetoothPaymentNotifier(this._ref) : super(const PaymentState());
+  BluetoothPaymentNotifier(this._ref) : super(BluetoothPaymentState.idle());
 
   Future<void> payWithBluetooth({
     required int amountSats,
     required fbp.BluetoothDevice device,
     String? note,
   }) async {
-    state = PaymentState.loading();
+    final authState = _ref.read(authProvider);
+    final userId = authState.userId;
+    if (userId == null) {
+      state = BluetoothPaymentState.failure('Utilisateur non authentifié');
+      return;
+    }
+
+    state = BluetoothPaymentState.loading();
 
     try {
       final paymentService = _ref.read(paymentServiceProvider);
       final result = await paymentService.payWithBluetooth(
         amountSats: amountSats,
         device: device,
+        userId: userId,
         note: note,
       );
 
       if (result.success) {
-        state = PaymentState.success(result.paymentHash ?? '', result.amountSats ?? 0);
+        state = BluetoothPaymentState.success(
+          result.paymentHash ?? '',
+          result.amountSats ?? 0,
+          counterparty: result.counterpartyName,
+        );
       } else {
-        state = PaymentState.failure(result.error ?? 'Erreur Bluetooth inconnue');
+        state = BluetoothPaymentState.failure(
+            result.error ?? 'Erreur Bluetooth inconnue');
       }
     } catch (e) {
-      state = PaymentState.failure(e.toString());
+      state = BluetoothPaymentState.failure(e.toString());
+    }
+  }
+
+  Future<void> receiveWithBluetooth({
+    String? note,
+  }) async {
+    final authState = _ref.read(authProvider);
+    final userId = authState.userId;
+    final userName = authState.user?['full_name'] as String? ?? 'Utilisateur';
+
+    if (userId == null) {
+      state = BluetoothPaymentState.failure('Utilisateur non authentifié');
+      return;
+    }
+
+    state = BluetoothPaymentState.loading();
+
+    try {
+      final paymentService = _ref.read(paymentServiceProvider);
+      final result = await paymentService.receiveWithBluetooth(
+        userId: userId,
+        userName: userName,
+      );
+
+      if (result.success) {
+        state = BluetoothPaymentState.success(
+          result.paymentHash ?? '',
+          result.amountSats ?? 0,
+          counterparty: result.counterpartyName,
+        );
+      } else {
+        state = BluetoothPaymentState.failure(
+            result.error ?? 'Erreur Bluetooth inconnue');
+      }
+    } catch (e) {
+      state = BluetoothPaymentState.failure(e.toString());
     }
   }
 
   void reset() {
-    state = PaymentState.idle();
+    state = BluetoothPaymentState.idle();
   }
-
 }
 
-final bluetoothDevicesProvider = StateProvider<List<fbp.BluetoothDevice>>((ref) => []);
+// ════════════════════════════════════════════════════════
+// SCAN & DISPOSITIFS
+// ════════════════════════════════════════════════════════
+
+final bluetoothDevicesProvider =
+    StateProvider<List<fbp.BluetoothDevice>>((ref) => []);
 final bluetoothScanningProvider = StateProvider<bool>((ref) => false);
 
 final nfcAvailableProvider = FutureProvider<bool>((ref) async {

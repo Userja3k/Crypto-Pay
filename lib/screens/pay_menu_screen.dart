@@ -17,7 +17,8 @@ class PayMenuScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Payer', style: TextStyle(fontWeight: FontWeight.bold)),
+        title:
+            const Text('Payer', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SafeArea(
         child: Padding(
@@ -65,7 +66,8 @@ class PayMenuScreen extends StatelessWidget {
                         HapticService.selection();
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const NfcPaymentScreen()),
+                          MaterialPageRoute(
+                              builder: (_) => const NfcPaymentScreen()),
                         );
                       },
                     ),
@@ -76,12 +78,13 @@ class PayMenuScreen extends StatelessWidget {
                       context,
                       icon: Icons.bluetooth,
                       title: 'Bluetooth',
-                      subtitle: 'Recherche d\'appareils...',
+                      subtitle: 'Connexion sécurisée',
                       onTap: () {
                         HapticService.selection();
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const BluetoothPaymentScreen()),
+                          MaterialPageRoute(
+                              builder: (_) => const BluetoothPaymentScreen()),
                         );
                       },
                     ),
@@ -92,11 +95,30 @@ class PayMenuScreen extends StatelessWidget {
               _buildLargeMenuItem(
                 context,
                 icon: Icons.link,
-                title: 'Lien d\'une structure extérieur',
-                subtitle: 'Partenaire à l\'application (ex: Binance)',
+                title: 'Lien externe (Binance...)',
+                subtitle: 'Recevoir depuis un wallet externe',
                 onTap: () {
                   HapticService.selection();
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DepositScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DepositScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildLargeMenuItem(
+                context,
+                icon: Icons.send_and_archive,
+                title: 'Transfert interne',
+                subtitle: 'Envoyer à un autre utilisateur Crypto-Pay',
+                onTap: () {
+                  HapticService.selection();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SendPaymentScreen(),
+                    ),
+                  );
                 },
               ),
             ],
@@ -106,7 +128,13 @@ class PayMenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLargeMenuItem(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+  Widget _buildLargeMenuItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: GlassContainer(
@@ -125,20 +153,37 @@ class PayMenuScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: const TextStyle(color: Colors.white38, fontSize: 13)),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white38, fontSize: 13),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white12, size: 16),
+            const Icon(Icons.arrow_forward_ios,
+                color: Colors.white12, size: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSmallMenuItem(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+  Widget _buildSmallMenuItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: GlassContainer(
@@ -150,9 +195,19 @@ class PayMenuScreen extends StatelessWidget {
           children: [
             Icon(icon, color: LiquidGlassTheme.accent, size: 28),
             const SizedBox(height: 16),
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
+            ),
           ],
         ),
       ),

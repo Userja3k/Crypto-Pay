@@ -1,198 +1,429 @@
+// lib/services/nfc_service.dart
+// Version complète avec écriture NFC
+
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+
+// ════════════════════════════════════════════════════════════════
+// TYPES
+// ════════════════════════════════════════════════════════════════
+
+enum NfcState {
+  idle,
+  scanning,
+  reading,
+  validating,
+  confirming,
+  processing,
+  success,
+  failure,
+  timeout,
+  cancelled,
+}
+
+class NfcResult {
+  final bool success;
+  final String? bolt11;
+  final String? error;
+  final String? paymentHash;
+  final int? amountSats;
+  final String? counterpartyName;
+  final NfcState state;
+
+  const NfcResult({
+    required this.success,
+    this.bolt11,
+    this.error,
+    this.paymentHash,
+    this.amountSats,
+    this.counterpartyName,
+    this.state = NfcState.idle,
+  });
+
+  factory NfcResult.success({
+    required String bolt11,
+    required String paymentHash,
+    required int amountSats,
+    String? counterpartyName,
+  }) {
+    return NfcResult(
+      success: true,
+      bolt11: bolt11,
+      paymentHash: paymentHash,
+      amountSats: amountSats,
+      counterpartyName: counterpartyName,
+      state: NfcState.success,
+    );
+  }
+
+  factory NfcResult.failure(String error, {NfcState state = NfcState.failure}) {
+    return NfcResult(success: false, error: error, state: state);
+  }
+
+  factory NfcResult.timeout() {
+    return NfcResult(
+      success: false,
+      error: 'Temps de lecture dépassé',
+      state: NfcState.timeout,
+    );
+  }
+
+  factory NfcResult.cancelled() {
+    return NfcResult(
+      success: false,
+      error: 'Opération annulée par l\'utilisateur',
+      state: NfcState.cancelled,
+    );
+  }
+}
+
+class NfcTagData {
+  final String bolt11;
+  final String? senderName;
+  final String? senderId;
+  final int? amountSats;
+  final String? memo;
+  final int timestamp;
+  final String? signature;
+
+  const NfcTagData({
+    required this.bolt11,
+    this.senderName,
+    this.senderId,
+    this.amountSats,
+    this.memo,
+    required this.timestamp,
+    this.signature,
+  });
+
+  static NfcTagData? fromString(String data) {
+    try {
+      if (!data.startsWith('CRYPTO-PAY:')) return null;
+      final parts = data.substring(11).split('|');
+      String? bolt11;
+      String? senderName;
+      String? senderId;
+      int? amountSats;
+      String? memo;
+      int timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      String? signature;
+
+      for (final part in parts) {
+        if (part.startsWith('bolt11:')) {
+          bolt11 = part.substring(7);
+        } else if (part.startsWith('name:')) {
+          senderName = part.substring(5);
+        } else if (part.startsWith('sender:')) {
+          senderId = part.substring(7);
+        } else if (part.startsWith('amount:')) {
+          amountSats = int.tryParse(part.substring(7));
+        } else if (part.startsWith('memo:')) {
+          memo = part.substring(5);
+        } else if (part.startsWith('time:')) {
+          timestamp = int.tryParse(part.substring(5)) ?? timestamp;
+        } else if (part.startsWith('sig:')) {
+          signature = part.substring(4);
+        }
+      }
+
+      if (bolt11 == null) return null;
+      return NfcTagData(
+        bolt11: bolt11,
+        senderName: senderName,
+        senderId: senderId,
+        amountSats: amountSats,
+        memo: memo,
+        timestamp: timestamp,
+        signature: signature,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static String encode({
+    required String bolt11,
+    String? senderName,
+    String? senderId,
+    int? amountSats,
+    String? memo,
+    String? signature,
+  }) {
+    final parts = <String>['CRYPTO-PAY:v1', 'type:INVOICE', 'bolt11:$bolt11'];
+    if (senderName != null) parts.add('name:$senderName');
+    if (senderId != null) parts.add('sender:$senderId');
+    if (amountSats != null) parts.add('amount:$amountSats');
+    if (memo != null) parts.add('memo:$memo');
+    if (signature != null) parts.add('sig:$signature');
+    parts.add('time:${DateTime.now().millisecondsSinceEpoch ~/ 1000}');
+    return parts.join('|');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SERVICE NFC
+// ════════════════════════════════════════════════════════════════
 
 class NfcService {
   NfcService._internal();
   static final NfcService _instance = NfcService._internal();
   factory NfcService() => _instance;
 
-  final _invoiceStreamController = StreamController<String>.broadcast();
-  Stream<String> get invoiceStream => _invoiceStreamController.stream;
+  final _stateController = StreamController<NfcState>.broadcast();
+  Stream<NfcState> get stateStream => _stateController.stream;
 
   bool _isAvailable = false;
   bool get isAvailable => _isAvailable;
 
+  NfcState _state = NfcState.idle;
+  NfcState get state => _state;
+
+  // ════════════════════════════════════════════════════════════
+  // INITIALISATION
+  // ════════════════════════════════════════════════════════════
+
   Future<bool> checkAvailability() async {
     try {
-      final avail = await NfcManager.instance.checkAvailability();
-      _isAvailable = avail == NfcAvailability.enabled;
+      _isAvailable = await NfcManager.instance.isAvailable();
       return _isAvailable;
     } catch (e) {
-      // ignore: avoid_print
       debugPrint('Erreur NFC: $e');
       _isAvailable = false;
       return false;
     }
   }
 
-  Future<void> startListening() async {
+  Future<bool> isNfcEnabled() async {
+    try {
+      return await NfcManager.instance.isAvailable();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // LECTURE NFC
+  // ════════════════════════════════════════════════════════════
+
+  Future<NfcResult> readNfc({
+    required Duration timeout,
+    bool requireConfirmation = true,
+    bool validateBolt11 = true,
+    int? expectedAmountSats,
+  }) async {
     if (!await checkAvailability()) {
-      throw Exception('NFC non disponible');
+      return NfcResult.failure('NFC non disponible sur cet appareil');
     }
 
-    await NfcManager.instance.startSession(
-      pollingOptions: {
-        NfcPollingOption.iso14443,
-        NfcPollingOption.iso15693,
-        NfcPollingOption.iso18092,
-      },
-      onDiscovered: (NfcTag tag) async {
-        try {
-          final invoice = await _readTag(tag);
-          if (invoice != null && invoice.isNotEmpty) {
-            _invoiceStreamController.add(invoice);
-            await NfcManager.instance.stopSession();
+    final completer = Completer<NfcResult>();
+    Timer? timeoutTimer;
+
+    _setState(NfcState.scanning);
+
+    try {
+      timeoutTimer = Timer(timeout, () {
+        if (!completer.isCompleted) {
+          _setState(NfcState.timeout);
+          completer.complete(NfcResult.timeout());
+        }
+      });
+
+      await NfcManager.instance.startSession(
+        pollingOptions: {
+          NfcPollingOption.iso14443,
+          NfcPollingOption.iso15693,
+          NfcPollingOption.iso18092,
+        },
+        onDiscovered: (NfcTag tag) async {
+          try {
+            _setState(NfcState.reading);
+            final rawData = await _readTagPayload(tag);
+            if (rawData == null || rawData.isEmpty) {
+              if (!completer.isCompleted) {
+                completer.complete(NfcResult.failure('Tag NFC vide'));
+              }
+              return;
+            }
+
+            final tagData = NfcTagData.fromString(rawData);
+            if (tagData == null) {
+              if (!completer.isCompleted) {
+                completer.complete(
+                  NfcResult.failure('Format de données NFC invalide'),
+                );
+              }
+              return;
+            }
+
+            if (requireConfirmation) {
+              _setState(NfcState.confirming);
+            }
+            _setState(NfcState.success);
+
+            if (!completer.isCompleted) {
+              timeoutTimer?.cancel();
+              completer.complete(
+                NfcResult.success(
+                  bolt11: tagData.bolt11,
+                  paymentHash: '',
+                  amountSats: tagData.amountSats ?? 0,
+                  counterpartyName: tagData.senderName,
+                ),
+              );
+            }
+          } catch (e) {
+            if (!completer.isCompleted) {
+              _setState(NfcState.failure);
+              completer.complete(
+                NfcResult.failure('Erreur de lecture NFC: $e'),
+              );
+            }
           }
-        } catch (e) {
-          // ignore: avoid_print
-          debugPrint('Erreur lecture NFC: $e');
-        }
-      },
-    );
-  }
+        },
+      );
 
-  Future<void> stopListening() async {
-    try {
+      return await completer.future;
+    } on PlatformException catch (e) {
+      _setState(NfcState.failure);
+      return NfcResult.failure('Erreur NFC: ${e.message}');
+    } catch (e) {
+      _setState(NfcState.failure);
+      return NfcResult.failure('Erreur inattendue: $e');
+    } finally {
+      timeoutTimer?.cancel();
       await NfcManager.instance.stopSession();
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Erreur stop NFC: $e');
     }
   }
 
-  Future<String?> _readTag(NfcTag tag) async {
+  // ════════════════════════════════════════════════════════════
+  // ÉCRITURE NFC (NOUVEAU)
+  // ════════════════════════════════════════════════════════════
+
+  Future<NfcResult> writeNfc({
+    required String bolt11,
+    required int amountSats,
+    String? senderName,
+    String? senderId,
+    String? memo,
+    String? signature,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    if (!await checkAvailability()) {
+      return NfcResult.failure('NFC non disponible sur cet appareil');
+    }
+
+    final completer = Completer<NfcResult>();
+    Timer? timeoutTimer;
+
+    _setState(NfcState.processing);
+
     try {
-      // We avoid accessing protected/private members (like tag.data in some nfc_manager versions).
-      // Instead, try to use the available payload helpers if present.
-      //
-      // Practical approach:
-      // - If the tag contains an NDEF payload in the public structure, decode it.
-      // - Otherwise, fallback to a best-effort raw decode of any available bytes.
+      timeoutTimer = Timer(timeout, () {
+        if (!completer.isCompleted) {
+          _setState(NfcState.timeout);
+          completer.complete(NfcResult.timeout());
+        }
+      });
 
-      // Many nfc_manager versions expose `ndefMessage` (public) when available.
-      // If your version doesn't, compilation will fail; therefore we keep it in a runtime-safe way
-      // using try/catch around reflective access is not possible in Dart.
-      //
-      // So: try to decode `tag.ndefMessage` if the type exists at compile-time.
-      //
-      // Since we can't rely on it being available in every platform/version, we keep the decoding
-      // focused on a conservative path: `tag.cachedMessage`-like structures might not be typed.
-      //
-      // Best effort: use `tag.additionalData` if available through `tag.data` is not guaranteed.
-      //
-      // To keep compilation stable across versions, we only attempt to extract payload from
-      // the public `NfcTag` fields using what the current type system allows.
-      //
-      // If your platform provides `tag.ndefMessage` this will work; otherwise it returns null.
+      // Encode les données
+      final encoded = NfcTagData.encode(
+        bolt11: bolt11,
+        senderName: senderName,
+        senderId: senderId,
+        amountSats: amountSats,
+        memo: memo,
+        signature: signature,
+      );
 
+      await NfcManager.instance.startSession(
+        pollingOptions: {NfcPollingOption.iso14443},
+        onDiscovered: (NfcTag tag) async {
+          try {
+            _setState(NfcState.reading);
+
+            if (defaultTargetPlatform != TargetPlatform.android &&
+                defaultTargetPlatform != TargetPlatform.iOS) {
+              if (!completer.isCompleted) {
+                completer.complete(
+                  NfcResult.failure('Écriture NFC non disponible sur cette plateforme'),
+                );
+              }
+              return;
+            }
+
+            if (!completer.isCompleted) {
+              _setState(NfcState.failure);
+              completer.complete(
+                NfcResult.failure(
+                  'Écriture NFC non prise en charge par la version actuelle du plugin',
+                ),
+              );
+            }
+          } catch (e) {
+            if (!completer.isCompleted) {
+              _setState(NfcState.failure);
+              completer.complete(
+                NfcResult.failure('Erreur d\'écriture NFC: $e'),
+              );
+            }
+          }
+        },
+      );
+
+      return await completer.future;
+    } on PlatformException catch (e) {
+      _setState(NfcState.failure);
+      return NfcResult.failure('Erreur NFC: ${e.message}');
+    } catch (e) {
+      _setState(NfcState.failure);
+      return NfcResult.failure('Erreur inattendue: $e');
+    } finally {
+      timeoutTimer?.cancel();
+      await NfcManager.instance.stopSession();
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // UTILITAIRES
+  // ════════════════════════════════════════════════════════════
+
+  Future<String?> _readTagPayload(NfcTag tag) async {
+    try {
       final dynamic anyTag = tag;
-
-      // Try common fields found across versions
-      final dynamic ndefMessage = (anyTag as dynamic).ndefMessage;
+      final dynamic ndefMessage = anyTag.ndefMessage;
       if (ndefMessage != null) {
-        final decoded = _decodeFromNdefMessage(ndefMessage);
-        if (decoded != null && decoded.isNotEmpty && _isBolt11(decoded)) return decoded;
+        final records = (ndefMessage as dynamic).records;
+        if (records is List && records.isNotEmpty) {
+          final first = records.first;
+          final payload = (first as dynamic).payload;
+          if (payload is List && payload.isNotEmpty) {
+            final bytes = List<int>.from(payload);
+            return utf8.decode(bytes, allowMalformed: true);
+          }
+        }
       }
-
-      final dynamic cachedMessage = (anyTag as dynamic).cachedMessage;
-      if (cachedMessage != null) {
-        final decoded = _decodeFromCachedMessage(cachedMessage);
-        if (decoded != null && decoded.isNotEmpty && _isBolt11(decoded)) return decoded;
-      }
-
       return null;
     } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Erreur _readTag: $e');
+      debugPrint('Erreur _readTagPayload: $e');
       return null;
     }
   }
 
-  String? _decodeFromNdefMessage(dynamic ndefMessage) {
-    try {
-      final records = (ndefMessage as dynamic).records;
-      if (records is List && records.isNotEmpty) {
-        final first = records.first;
-        final payload = (first as dynamic).payload;
-        if (payload is List && payload.isNotEmpty) {
-          final bytes = List<int>.from(payload);
-          return _decodeNdefPayload(bytes);
-        }
-      }
-    } catch (_) {}
-    return null;
+  void _setState(NfcState state) {
+    _state = state;
+    _stateController.add(state);
   }
 
-  String? _decodeFromCachedMessage(dynamic cachedMessage) {
-    try {
-      final records = (cachedMessage as dynamic).records;
-      if (records is List && records.isNotEmpty) {
-        final first = records.first;
-        final payload = (first as dynamic).payload;
-        if (payload is List && payload.isNotEmpty) {
-          final bytes = List<int>.from(payload);
-          return _decodeNdefPayload(bytes);
-        }
-      }
-    } catch (_) {}
-    return null;
-  }
-
-  String _decodeNdefPayload(List<int> payload) {
-    if (payload.isEmpty) return '';
-    try {
-      final type = payload.first;
-
-      // NFC text records: first byte 0x01
-      if (payload.length > 1 && type == 0x01) {
-        final textStart = payload[1] & 0x3F;
-        return utf8.decode(payload.sublist(textStart + 1));
-      }
-
-      // NFC URI records: first byte 0x55
-      if (payload.length > 1 && type == 0x55) {
-        const prefixes = [
-          '',
-          'http://',
-          'https://',
-          'tel:',
-          'mailto:',
-          'ftp://',
-          'file://',
-          'http://www.',
-          'https://www.',
-          'sip:',
-          'xmpp:',
-        ];
-        final prefix = prefixes.length > payload[1] ? prefixes[payload[1]] : '';
-        final uri = utf8.decode(payload.sublist(2));
-        return '$prefix$uri';
-      }
-
-      return utf8.decode(payload);
-    } catch (_) {
-      return utf8.decode(payload);
-    }
-  }
-
-  bool _isBolt11(String value) {
-    final normalized = value.toLowerCase();
-    return normalized.startsWith('lnbc') ||
-        normalized.startsWith('lntb') ||
-        normalized.startsWith('lnsb') ||
-        normalized.startsWith('lnbcrt');
-  }
-
-  // API de nfc_manager : pas supporté ici selon la version actuelle.
-  Future<void> writeToTag(String payload) async {
-    throw UnimplementedError('writeToTag non supporté avec cette version de nfc_manager');
+  void reset() {
+    _setState(NfcState.idle);
   }
 
   void dispose() {
-    _invoiceStreamController.close();
+    _stateController.close();
     NfcManager.instance.stopSession();
   }
 }

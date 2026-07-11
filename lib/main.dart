@@ -4,21 +4,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'core/theme.dart';
 import 'screens/splash_screen.dart';
+import 'services/breez_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Supabase using build-time defines (see lib/config.dart)
-  await Supabase.initialize(
-    url: kSupabaseUrl,
-    anonKey: kSupabaseAnonKey,
-  );
 
-  runApp(
-    const ProviderScope(
-      child: CryptoPayApp(),
-    ),
-  );
+  // Initialize Supabase
+  await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
+
+  // Initialize Breez SDK
+  await BreezService().initialize();
+
+  runApp(const ProviderScope(child: CryptoPayApp()));
 }
 
 class CryptoPayApp extends StatelessWidget {

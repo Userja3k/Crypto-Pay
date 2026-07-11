@@ -82,6 +82,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHeader(BuildContext context, String userName) {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount =
+        notifications.where((n) => n['is_read'] == false).length;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -108,43 +112,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Stack(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
+                  icon: const Icon(Icons.notifications_none_rounded,
+                      color: Colors.white, size: 28),
                   onPressed: () {
                     HapticService.selection();
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const NotificationScreen()));
                   },
                 ),
-                Positioned(
-                  right: 12,
-                  top: 12,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: const Text(
-                      '3',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                if (unreadCount > 0)
+                  Positioned(
+                    right: 12,
+                    top: 12,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
                       ),
-                      textAlign: TextAlign.center,
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Text(
+                        unreadCount > 9 ? '9+' : '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: () {
                 HapticService.selection();
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()));
               },
               child: Container(
                 width: 44,
@@ -153,7 +163,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white12),
                   image: const DecorationImage(
-                    image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
+                    image: NetworkImage(
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuDwzUbqC4QgFkWcZCWJaw-nVRdq2IySRgc5dSCC2OLP1S7EqhURwsuQIBNOujaG11As66OFxvTBoxhYi-Glg3Z9EQWVFwPLRgCsszmFC7GVbovRwmmRF6fdVAZKaB97wyNTKqrW3jCzw9UH1HurXoYA-DsbqTRfzA71mkED36rW2CGpbnzZDQOb5RRGAkm6GYCZ--rBFD0V-EziDb2Y4Ovu88npZnchalO-5W2-EI8cEoZpmNCUPC8a__cP-S4h4976tNyMS9keyKs'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -197,7 +208,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             'Solde principal',
-            style: TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+                fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 12),
           Text(
@@ -231,7 +245,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Icons.arrow_upward_rounded,
             Colors.white,
             Colors.black,
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SendPaymentScreen())),
+            () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SendPaymentScreen())),
             subtitle: 'Bluetooth / NFC',
           ),
         ),
@@ -243,7 +258,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Icons.arrow_downward_rounded,
             Colors.white.withValues(alpha: 0.05),
             Colors.white,
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceivePaymentScreen())),
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const ReceivePaymentScreen())),
             subtitle: 'NFC / QR',
           ),
         ),
@@ -251,7 +269,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _quickActionButton(BuildContext context, String label, IconData icon, Color bgColor, Color iconColor, VoidCallback onTap, {String? subtitle}) {
+  Widget _quickActionButton(BuildContext context, String label, IconData icon,
+      Color bgColor, Color iconColor, VoidCallback onTap,
+      {String? subtitle}) {
     return GestureDetector(
       onTap: () {
         HapticService.light();
@@ -298,7 +318,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-
   Widget _buildSlidableStats(BuildContext context, AuthState authState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,9 +337,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(width: 8, height: 8, decoration: const BoxDecoration(color: LiquidGlassTheme.accent, shape: BoxShape.circle)),
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                      color: LiquidGlassTheme.accent, shape: BoxShape.circle)),
               const SizedBox(width: 8),
-              Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle)),
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle)),
             ],
           ),
         ),
@@ -337,7 +365,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         const Text(
           'Transactions 7 jours',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 16),
         GlassContainer(
@@ -348,7 +377,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             height: 180,
             child: historyAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => const Center(child: Text('Impossible de charger les statistiques', style: TextStyle(color: Colors.white70))),
+              error: (e, st) => const Center(
+                  child: Text('Impossible de charger les statistiques',
+                      style: TextStyle(color: Colors.white70))),
               data: (list) {
                 // compute last 7 days counts
                 final now = DateTime.now();
@@ -390,15 +421,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           width: 30,
           height: height,
           decoration: BoxDecoration(
-            color: isSelected ? LiquidGlassTheme.accent : LiquidGlassTheme.accent.withValues(alpha: 0.2),
+            color: isSelected
+                ? LiquidGlassTheme.accent
+                : LiquidGlassTheme.accent.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: LiquidGlassTheme.accent.withValues(alpha: 0.4),
-                blurRadius: 15,
-                spreadRadius: 2,
-              )
-            ] : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: LiquidGlassTheme.accent.withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      spreadRadius: 2,
+                    )
+                  ]
+                : null,
           ),
         );
       },
@@ -428,7 +463,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }).toList();
         return _buildTransactionsListUI(formattedTxs);
       },
-      loading: () => const Center(child: CircularProgressIndicator(color: LiquidGlassTheme.accent)),
+      loading: () => const Center(
+          child: CircularProgressIndicator(color: LiquidGlassTheme.accent)),
       error: (e, s) => _buildEmptyTransactionsUI(),
     );
   }
@@ -439,7 +475,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         const Text(
           'Transactions récentes',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 16),
         GlassContainer(
@@ -451,10 +488,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final String name = tx['name'] as String;
               final double amount = tx['amount'] as double;
               final bool isIncoming = tx['is_incoming'] as bool;
-              
+
               final sign = isIncoming ? '+' : '';
               final amountStr = '$sign${amount.toStringAsFixed(0)}\$';
-              
+
               return Material(
                 color: Colors.transparent,
                 child: ListTile(
@@ -462,8 +499,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: isIncoming 
-                          ? LiquidGlassTheme.accent.withValues(alpha: 0.1) 
+                      color: isIncoming
+                          ? LiquidGlassTheme.accent.withValues(alpha: 0.1)
                           : Colors.white.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
                     ),
@@ -471,7 +508,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Text(
                         isIncoming ? '←' : '→',
                         style: TextStyle(
-                          color: isIncoming ? LiquidGlassTheme.accent : Colors.white70,
+                          color: isIncoming
+                              ? LiquidGlassTheme.accent
+                              : Colors.white70,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -480,12 +519,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   title: Text(
                     name,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 16),
                   ),
                   trailing: Text(
                     amountStr,
                     style: TextStyle(
-                      color: isIncoming ? LiquidGlassTheme.accent : Colors.white,
+                      color:
+                          isIncoming ? LiquidGlassTheme.accent : Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -505,7 +546,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         const Text(
           'Transactions récentes',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 16),
         GlassContainer(
@@ -531,16 +573,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(Icons.person_outline, isActive: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()))),
-          _navItem(Icons.search, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen()))),
-          _navItem(Icons.credit_card, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayMenuScreen()))),
-          _navItem(Icons.settings_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
+          _navItem(Icons.person_outline,
+              isActive: true,
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()))),
+          _navItem(Icons.search,
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SearchScreen()))),
+          _navItem(Icons.credit_card,
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const PayMenuScreen()))),
+          _navItem(Icons.settings_outlined,
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()))),
         ],
       ),
     );
   }
 
-  Widget _navItem(IconData icon, {bool isActive = false, required VoidCallback onTap}) {
+  Widget _navItem(IconData icon,
+      {bool isActive = false, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: () {
         HapticService.selection();
@@ -552,7 +604,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: isActive ? Colors.white : Colors.transparent,
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: isActive ? Colors.black : Colors.white60, size: 28),
+        child: Icon(icon,
+            color: isActive ? Colors.black : Colors.white60, size: 28),
       ),
     );
   }
