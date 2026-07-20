@@ -8,6 +8,7 @@ import '../core/widgets/glass_button.dart';
 import '../core/utils/security_utils.dart';
 import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
+import '../core/utils/ui_utils.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -143,15 +144,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _submitRegistration() async {
     final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Les mots de passe ne correspondent pas')),
-      );
+      UIUtils.showErrorDialog(context, 'Les mots de passe ne correspondent pas');
       return;
     }
     if (!_acceptTerms || !_acceptPrivacy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez accepter les conditions et politiques')),
-      );
+      UIUtils.showErrorDialog(context, 'Veuillez accepter les conditions et politiques');
       return;
     }
 
@@ -212,16 +209,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur: ${result['message'] ?? "Inscription échouée"}')),
-          );
+          UIUtils.showErrorDialog(context, result['message'] ?? "Inscription échouée");
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur inscription: $e')),
-        );
+        UIUtils.showErrorDialog(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -346,9 +339,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   _cityController.text.isNotEmpty) {
                 _nextStep();
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Veuillez remplir les informations requises')),
-                );
+                UIUtils.showErrorDialog(context, 'Veuillez remplir les informations requises');
               }
             },
             child: const Text('Suivant'),
@@ -415,9 +406,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               if (_rectoUploaded && _versoUploaded && _selfieUploaded) {
                 _nextStep();
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Veuillez importer tous les documents requis')),
-                );
+                UIUtils.showErrorDialog(context, 'Veuillez importer tous les documents requis');
               }
             },
             child: const Text('Vérifier'),
@@ -541,9 +530,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   });
                   HapticService.medium();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Veuillez remplir les informations de parrainage')),
-                  );
+                  UIUtils.showErrorDialog(context, 'Veuillez remplir les informations de parrainage');
                 }
               },
               child: const Text('Envoyer la demande'),
@@ -638,9 +625,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 if (_approvalCodeController.text.trim() == _correctApprovalCode) {
                   _nextStep();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Code incorrect. Entrez le code 729381 généré par le parent.')),
-                  );
+                  UIUtils.showErrorDialog(context, 'Code incorrect. Entrez le code 729381 généré par le parent.');
                 }
               },
               child: const Text('Suivant'),
@@ -703,13 +688,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               if (pin.length == 6 && pin == cpin) {
                 _nextStep();
               } else if (pin.length != 6) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Le code PIN doit comporter 6 chiffres')),
-                );
+                UIUtils.showErrorDialog(context, 'Le code PIN doit comporter 6 chiffres');
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Les codes PIN ne correspondent pas')),
-                );
+                UIUtils.showErrorDialog(context, 'Les codes PIN ne correspondent pas');
               }
             },
             child: const Text('Suivant'),

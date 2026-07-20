@@ -2,7 +2,6 @@
 // Badge avec icône pour les notifications
 
 import 'package:flutter/material.dart';
-import '../theme.dart';
 
 enum PaymentTech {
   bluetooth,

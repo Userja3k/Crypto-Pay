@@ -7,7 +7,9 @@ import '../core/widgets/payment_confirm_slider.dart';
 import '../core/widgets/water_drop_success_overlay.dart';
 import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
+import '../core/utils/ui_utils.dart';
 import 'payment_success_screen.dart';
+import 'qr_scanner_screen.dart';
 
 class SendPaymentScreen extends ConsumerStatefulWidget {
   final String? recipientId;
@@ -25,6 +27,7 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
   final _destinationController = TextEditingController();
 
   bool _isLoading = false;
+  String? _validationError;
   final String _paymentMethod = 'internal';
 
   @override
@@ -49,6 +52,103 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
         normalized.startsWith('lntb') ||
         normalized.startsWith('lnsb') ||
         normalized.startsWith('lnbcrt');
+  }
+
+  Future<void> _handleQRScan() async {
+    HapticService.selection();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => QrScannerScreen(
+          onScanComplete: (code) async {
+            await _validateAndSetDestination(code);
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _validateAndSetDestination(String code) async {
+    setState(() {
+      _isLoading = true;
+      _validationError = null;
+    });
+
+    try {
+      bool isValid = false;
+      String cleanCode = code.trim();
+
+      // 1. Check if it's a Lightning Invoice (BOLT11)
+      if (_isBolt11Invoice(cleanCode)) {
+        isValid = true; // Breez will validate it further
+      } else {
+        // 2. Check if it's a valid Crypto-Pay user (ID, Email, or Lightning Address)
+        final supabase = ref.read(supabaseServiceProvider);
+        
+        // Search for user
+        final users = await supabase.searchUsers(cleanCode);
+        if (users.isNotEmpty) {
+          isValid = true;
+          // If we found exact match, use the ID
+          final exactMatch = users.firstWhere(
+            (u) => u['email'] == cleanCode || u['phone'] == cleanCode || u['id'] == cleanCode,
+            orElse: () => users.first,
+          );
+          cleanCode = exactMatch['id'] ?? cleanCode;
+        } else {
+          // Check if it's a Lightning Address registered in our system
+          final laService = ref.read(lightningAddressServiceProvider);
+          final userId = await laService.getUserIdFromAddress(cleanCode);
+          if (userId != null) {
+            isValid = true;
+            cleanCode = userId;
+          }
+        }
+      }
+
+      if (isValid) {
+        _destinationController.text = cleanCode;
+        HapticService.success();
+        if (mounted) {
+          _showSuccessPopup('Code validé', 'Le destinataire a été identifié avec succès.');
+        }
+      } else {
+        setState(() {
+          _validationError = 'Informations invalides : Destinataire introuvable';
+        });
+        HapticService.medium();
+      }
+    } catch (e) {
+      setState(() {
+        _validationError = 'Erreur lors de la validation';
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showSuccessPopup(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+            const SizedBox(width: 12),
+            Text(title, style: const TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('GÉNIAL', style: TextStyle(color: LiquidGlassTheme.accent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _processPayment() async {
@@ -82,14 +182,14 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
           label: _noteController.text.isNotEmpty ? _noteController.text : null,
         );
 
-        if (response.payment?.status == PaymentStatus.Complete) {
+        if (response.payment.status == PaymentStatus.Complete) {
           if (mounted) {
             WaterDropSuccessOverlay.show(context, () {
               _showSuccess(amount, destination);
             });
           }
         } else {
-          throw Exception(response.payment?.error ?? 'Paiement échoué');
+          throw Exception(response.payment.error ?? 'Paiement échoué');
         }
       } else {
         // Paiement interne
@@ -115,10 +215,7 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Erreur: $e'), backgroundColor: Colors.redAccent),
-        );
+        UIUtils.showErrorDialog(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -160,6 +257,14 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
             const Text('Destinataire', style: TextStyle(color: Colors.white60)),
             const SizedBox(height: 12),
             _buildDestinationInput(),
+            if (_validationError != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+                child: Text(
+                  _validationError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
             const SizedBox(height: 24),
             _buildNoteInput(),
             const SizedBox(height: 48),
@@ -225,7 +330,10 @@ class _SendPaymentScreenState extends ConsumerState<SendPaymentScreen> {
           icon:
               const Icon(Icons.person_outline, color: LiquidGlassTheme.accent),
           suffixIcon: widget.recipientId == null
-              ? const Icon(Icons.qr_code_scanner, color: Colors.white38)
+              ? IconButton(
+                  icon: const Icon(Icons.qr_code_scanner, color: Colors.white38),
+                  onPressed: _handleQRScan,
+                )
               : null,
         ),
       ),

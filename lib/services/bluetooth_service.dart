@@ -323,7 +323,6 @@ class BluetoothService {
   BluetoothDevice? _connectedDevice;
   BluetoothCharacteristic? _requestCharacteristic;
   BluetoothCharacteristic? _responseCharacteristic;
-  BluetoothCharacteristic? _statusCharacteristic;
 
   // ════════════════════════════════════════════════════════════
   // INITIALISATION
@@ -331,7 +330,7 @@ class BluetoothService {
 
   Future<bool> checkAvailability() async {
     try {
-      return await FlutterBluePlus.instance.isAvailable;
+      return await FlutterBluePlus.isSupported;
     } catch (e) {
       return false;
     }
@@ -339,8 +338,8 @@ class BluetoothService {
 
   Future<bool> isBluetoothEnabled() async {
     try {
-      final status = await FlutterBluePlus.instance.state.first;
-      return status == BluetoothState.on;
+      final status = await FlutterBluePlus.adapterState.first;
+      return status == BluetoothAdapterState.on;
     } catch (e) {
       return false;
     }
@@ -348,7 +347,7 @@ class BluetoothService {
 
   Future<bool> requestEnable() async {
     try {
-      await FlutterBluePlus.instance.turnOn();
+      await FlutterBluePlus.turnOn();
       return true;
     } catch (e) {
       return false;
@@ -369,13 +368,13 @@ class BluetoothService {
     _setState(BleState.scanning);
     _devicesStreamController.add([]);
 
-    final scanSubscription = FlutterBluePlus.instance.scanResults.listen((results) {
+    final scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       final devices = results.map((result) => result.device).toList();
       _devicesStreamController.add(devices);
     });
 
     try {
-      await FlutterBluePlus.instance.startScan(
+      await FlutterBluePlus.startScan(
         timeout: Duration(seconds: timeout),
         withServices: [Guid(CryptoPayBleUuid.serviceUuid)],
       );
@@ -388,7 +387,7 @@ class BluetoothService {
 
   Future<void> stopScan() async {
     try {
-      await FlutterBluePlus.instance.stopScan();
+      await FlutterBluePlus.stopScan();
     } catch (e) {
       debugPrint('Erreur stop scan: $e');
     }
@@ -404,12 +403,12 @@ class BluetoothService {
     _isScanning = true;
 
     try {
-      await FlutterBluePlus.instance.startScan(
+      await FlutterBluePlus.startScan(
         timeout: timeout,
         withServices: [Guid(CryptoPayBleUuid.serviceUuid)],
       );
 
-      await for (final results in FlutterBluePlus.instance.scanResults) {
+      await for (final results in FlutterBluePlus.scanResults) {
         for (final scanResult in results) {
           final hasService = scanResult.advertisementData.serviceUuids.any(
             (uuid) => uuid.toString().toUpperCase().contains(
@@ -422,7 +421,7 @@ class BluetoothService {
         }
       }
     } finally {
-      await FlutterBluePlus.instance.stopScan();
+      await FlutterBluePlus.stopScan();
       _isScanning = false;
       _setState(BleState.idle);
     }
@@ -451,7 +450,10 @@ class BluetoothService {
 
     try {
       // 1. Connexion
-      await device.connect(timeout: timeout);
+      await device.connect(
+        license: License.nonprofit,
+        timeout: timeout,
+      );
       _connectedDevice = device;
 
       // 2. Découverte des services
@@ -477,8 +479,6 @@ class BluetoothService {
           _requestCharacteristic = char;
         } else if (uuid.contains(CryptoPayBleUuid.responseChar.toUpperCase().substring(0, 8))) {
           _responseCharacteristic = char;
-        } else if (uuid.contains(CryptoPayBleUuid.statusChar.toUpperCase().substring(0, 8))) {
-          _statusCharacteristic = char;
         }
       }
 
@@ -488,7 +488,7 @@ class BluetoothService {
 
       // 4. Souscription aux notifications
       await _responseCharacteristic!.setNotifyValue(true);
-      _responseCharacteristic!.value.listen((value) {
+      _responseCharacteristic!.lastValueStream.listen((value) {
         _handleIncomingMessage(value);
       });
 
@@ -510,19 +510,19 @@ class BluetoothService {
       _isConnected = true;
       _setState(BleState.idle);
 
-      timeoutTimer?.cancel();
+      timeoutTimer.cancel();
       completer.complete(BleResult.success(
         bolt11: '',
         paymentHash: '',
         amountSats: 0,
-        counterpartyName: device.name,
+        counterpartyName: device.platformName,
       ));
 
       return await completer.future;
     } catch (e) {
       _setState(BleState.failure);
       await _disconnect();
-      timeoutTimer?.cancel();
+      timeoutTimer.cancel();
       completer.complete(BleResult.failure('Erreur de connexion: $e'));
       return await completer.future;
     }
@@ -581,12 +581,12 @@ class BluetoothService {
 
       if (status == BleResponseStatus.confirmed) {
         _setState(BleState.success);
-        timeoutTimer?.cancel();
+        timeoutTimer.cancel();
         completer.complete(BleResult.success(
           bolt11: bolt11,
           paymentHash: paymentHash ?? '',
           amountSats: amountSats,
-          counterpartyName: _connectedDevice?.name,
+          counterpartyName: _connectedDevice?.platformName,
           message: response,
         ));
       } else if (status == BleResponseStatus.rejected) {
@@ -601,7 +601,7 @@ class BluetoothService {
       return await completer.future;
     } catch (e) {
       _setState(BleState.failure);
-      timeoutTimer?.cancel();
+      timeoutTimer.cancel();
       completer.complete(BleResult.failure('Erreur: $e'));
       return await completer.future;
     }
@@ -659,7 +659,7 @@ class BluetoothService {
       await _sendMessage(response);
 
       _setState(BleState.success);
-      timeoutTimer?.cancel();
+      timeoutTimer.cancel();
       completer.complete(BleResult.success(
         bolt11: bolt11,
         paymentHash: '',
@@ -671,7 +671,7 @@ class BluetoothService {
       return await completer.future;
     } catch (e) {
       _setState(BleState.failure);
-      timeoutTimer?.cancel();
+      timeoutTimer.cancel();
       completer.complete(BleResult.failure('Erreur: $e'));
       return await completer.future;
     }
@@ -752,7 +752,10 @@ class BluetoothService {
           ? device
           : (device as ScanResult).device;
 
-      await targetDevice.connect(timeout: timeout);
+      await targetDevice.connect(
+        license: License.nonprofit,
+        timeout: timeout,
+      );
       final services = await targetDevice.discoverServices();
 
       BluetoothCharacteristic? characteristic;
@@ -785,7 +788,7 @@ class BluetoothService {
         bolt11: utf8.decode(payload),
         paymentHash: '',
         amountSats: 0,
-        counterpartyName: targetDevice.name,
+        counterpartyName: targetDevice.platformName,
       );
     } catch (e) {
       return BleResult.failure('Error: $e');
@@ -827,7 +830,6 @@ class BluetoothService {
     _connectedDevice = null;
     _requestCharacteristic = null;
     _responseCharacteristic = null;
-    _statusCharacteristic = null;
     _isConnected = false;
     _setState(BleState.idle);
   }

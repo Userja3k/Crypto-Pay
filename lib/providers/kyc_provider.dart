@@ -42,8 +42,11 @@ class KycNotifier extends StateNotifier<KycState> {
       if (response is List && response.isNotEmpty) {
         final data = response.first as Map<String, dynamic>;
         final level = data['level'] as String;
-        if (level == 'verified') state = state.copyWith(status: KycStatus.verified);
-        else if (level == 'basic') state = state.copyWith(status: KycStatus.submitted);
+        if (level == 'verified') {
+          state = state.copyWith(status: KycStatus.verified);
+        } else if (level == 'basic') {
+          state = state.copyWith(status: KycStatus.submitted);
+        }
       }
     } catch (_) {}
   }

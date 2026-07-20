@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
+import '../core/widgets/glass_button.dart';
 import '../services/help_service.dart';
 
 class HelpCenterScreen extends ConsumerStatefulWidget {
@@ -49,7 +50,23 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(LiquidGlassTheme.marginPage),
-            child: Row(children: [Expanded(child: ElevatedButton(onPressed: () => HelpService().openHelpLink(HelpService().getSupportUrl()), child: const Text('Contacter le support'))), const SizedBox(width: 12), Expanded(child: ElevatedButton(onPressed: () => HelpService().openHelpLink(HelpService().getDocumentationUrl()), child: const Text('Documentation')))]),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GlassButton(
+                    onPressed: () => HelpService().openHelpLink(HelpService().getSupportUrl()),
+                    child: const Text('Support'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GlassButton(
+                    onPressed: () => HelpService().openHelpLink(HelpService().getDocumentationUrl()),
+                    child: const Text('Doc.'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

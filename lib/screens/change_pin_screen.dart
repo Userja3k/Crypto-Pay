@@ -1,3 +1,5 @@
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
@@ -5,6 +7,7 @@ import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
+import '../core/utils/ui_utils.dart';
 
 class ChangePinScreen extends ConsumerStatefulWidget {
   const ChangePinScreen({super.key});
@@ -36,15 +39,45 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
     setState(() => _isLoading = true);
     HapticService.medium();
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final authState = ref.read(authProvider);
+      final userId = authState.userId;
+      final identifier = authState.user?['email'] ?? authState.user?['phone'];
 
-    HapticService.success();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Code PIN modifié')));
-      Navigator.pop(context);
+      if (userId == null || identifier == null) {
+        throw Exception('Session invalide');
+      }
+
+      final supabaseService = ref.read(supabaseServiceProvider);
+      
+      // Get salt
+      final salt = await supabaseService.getUserSalt(identifier);
+      if (salt == null) throw Exception('Impossible de récupérer le salt');
+
+      // Hash PINs
+      final oldHash = sha256.convert(utf8.encode(currentPin + salt)).toString();
+      final newHash = sha256.convert(utf8.encode(newPin + salt)).toString();
+
+      final success = await supabaseService.changePin(
+        userId: userId,
+        oldPinHash: oldHash,
+        newPinHash: newHash,
+      );
+
+      if (success) {
+        HapticService.success();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Code PIN modifié')));
+          Navigator.pop(context);
+        }
+      } else {
+        UIUtils.showErrorDialog(context, 'Code PIN actuel incorrect');
+      }
+    } catch (e) {
+      UIUtils.showErrorDialog(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-
-    if (mounted) setState(() => _isLoading = false);
   }
 
   void _showError(String message) {

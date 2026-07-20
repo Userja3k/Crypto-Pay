@@ -16,7 +16,7 @@ Tu as des scripts TypeScript dans `supabase/functions/` mais tu ne sais pas:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      TON APPLICATION FLUTTER                    │
-│                   (screens/ providers/)                          │
+│                   (screens/ providers/)                         │
 │  - send_payment_screen.dart                                     │
 │  - receive_payment_screen.dart                                  │
 │  - user_provider.dart (authProvider)                            │
@@ -24,27 +24,27 @@ Tu as des scripts TypeScript dans `supabase/functions/` mais tu ne sais pas:
                          │
                          │ Appels réseau via Supabase SDK
                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              SUPABASE BACKEND (Cloud)                           │
+┌────────────────────────────────────────────────────────────────┐
+│              SUPABASE BACKEND (Cloud)                          │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │ Edge Functions (TypeScript/Deno)                         │  │
-│  │ - supabase/functions/lnd-integration/index.ts           │  │
-│  │ - supabase/functions/price-oracle/index.ts              │  │
+│  │ - supabase/functions/lnd-integration/index.ts            │  │
+│  │ - supabase/functions/price-oracle/index.ts               │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │ Base de données PostgreSQL                              │  │
-│  │ - users, transactions, balances, exchange_rates         │  │
+│  │ Base de données PostgreSQL                               │  │
+│  │ - users, transactions, balances, exchange_rates          │  │
 │  └──────────────────────────────────────────────────────────┘  │
-└────────────────────────┬────────────────────────────────────────┘
+└────────────────────────┬───────────────────────────────────────┘
                          │
                          │ Appels via REST/gRPC
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      TON NŒUD LIGHTNING (LND)                   │
 │                    (mainnet ou testnet)                         │
-│  - API gRPC pour créer des factures                            │
-│  - API REST pour envoyer des paiements                         │
-│  - Clés macaroon pour l'authentification                       │
+│  - API gRPC pour créer des factures                             │
+│  - API REST pour envoyer des paiements                          │
+│  - Clés macaroon pour l'authentification                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 

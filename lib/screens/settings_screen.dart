@@ -12,6 +12,9 @@ import 'profile_screen.dart';
 import 'welcome_screen.dart';
 import '../providers/user_provider.dart';
 
+import 'change_pin_screen.dart';
+import 'help_center_screen.dart';
+
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -55,9 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 24),
             _buildSection('Sécurité', [
               _buildTile(Icons.lock_outline, 'Modifier le code PIN', () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Modification du code PIN non disponible pour le moment')),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePinScreen()));
               }),
               SwitchListTile(
                 title: const Text('Face ID / Empreinte'),
@@ -94,9 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 24),
             _buildSection('Support', [
               _buildTile(Icons.help_outline, 'Centre d\'aide', () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Centre d\'aide non disponible pour le moment')),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpCenterScreen()));
               }),
               _buildTile(Icons.info_outline, 'À propos', () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));

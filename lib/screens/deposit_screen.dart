@@ -8,6 +8,7 @@ import '../core/widgets/glass_container.dart';
 import '../core/widgets/glass_button.dart';
 import '../providers/user_provider.dart';
 import '../services/haptic_service.dart';
+import '../core/utils/ui_utils.dart';
 
 int usdToSats(double amountUsd) {
   return ((amountUsd / 70000.0) * 100000000).round();
@@ -37,18 +38,14 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
   Future<void> _submitDeposit() async {
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0;
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez saisir un montant valide.')),
-      );
+      UIUtils.showErrorDialog(context, 'Veuillez saisir un montant valide.');
       return;
     }
 
     final authState = ref.read(authProvider);
     final userId = authState.user?['user_id'] as String?;
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Utilisateur non authentifié.')),
-      );
+      UIUtils.showErrorDialog(context, 'Utilisateur non authentifié.');
       return;
     }
 
@@ -81,9 +78,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de génération du lien : $e')),
-        );
+        UIUtils.showErrorDialog(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

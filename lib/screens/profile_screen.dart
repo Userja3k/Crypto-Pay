@@ -6,6 +6,7 @@ import '../providers/user_provider.dart';
 import '../services/share_service.dart';
 import '../services/haptic_service.dart';
 import 'transaction_history_screen.dart';
+import 'receive_payment_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -28,7 +29,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 20),
             _buildProfileCard(user),
             const SizedBox(height: 32),
-            _buildStatsSection(user),
+            _buildStatsSection(ref, user),
             const SizedBox(height: 32),
             _buildActionsList(context, ref),
           ],
@@ -87,14 +88,32 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsSection(Map<String, dynamic>? user) {
+  Widget _buildStatsSection(WidgetRef ref, Map<String, dynamic>? user) {
+    final userId = user?['user_id'] ?? '';
+    if (userId.isEmpty) return const SizedBox.shrink();
+
+    final balanceAsync = ref.watch(userBalanceProvider(userId));
+    final historyAsync = ref.watch(transactionHistoryProvider(userId));
+
     return Row(
       children: [
-        _statItem('Envoyé', '---'),
-        const SizedBox(width: 16),
-        _statItem('Reçu', '---'),
-        const SizedBox(width: 16),
-        _statItem('Transactions', '0'),
+        balanceAsync.when(
+          data: (data) => _statItem('Envoyé', '${(data['monthly_sent_usd'] as num?)?.toStringAsFixed(0) ?? '0'}\$'),
+          loading: () => _statItem('Envoyé', '...'),
+          error: (_, __) => _statItem('Envoyé', '0\$'),
+        ),
+        const SizedBox(width: 12),
+        balanceAsync.when(
+          data: (data) => _statItem('Reçu', '${(data['monthly_received_usd'] as num?)?.toStringAsFixed(0) ?? '0'}\$'),
+          loading: () => _statItem('Reçu', '...'),
+          error: (_, __) => _statItem('Reçu', '0\$'),
+        ),
+        const SizedBox(width: 12),
+        historyAsync.when(
+          data: (list) => _statItem('Transac.', '${list.length}'),
+          loading: () => _statItem('Transac.', '...'),
+          error: (_, __) => _statItem('Transac.', '0'),
+        ),
       ],
     );
   }
@@ -121,17 +140,15 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           _actionTile(Icons.history, 'Historique complet', () {
             HapticService.selection();
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => TransactionHistoryScreen()));
           }),
           _actionTile(Icons.account_balance_wallet_outlined, 'Mes portefeuilles', () {
             HapticService.selection();
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => TransactionHistoryScreen()));
           }),
           _actionTile(Icons.qr_code_scanner, 'Mon code QR', () {
             HapticService.selection();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Code QR disponible dans Recevoir')),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ReceivePaymentScreen()));
           }),
           _actionTile(Icons.share, 'Partager mon profil', () async {
             HapticService.selection();

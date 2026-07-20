@@ -7,6 +7,7 @@ import '../core/widgets/glass_button.dart';
 import '../core/widgets/water_drop_success_overlay.dart';
 import '../providers/payment_provider.dart';
 import '../services/haptic_service.dart';
+import '../core/utils/ui_utils.dart';
 
 class NfcPaymentScreen extends ConsumerStatefulWidget {
   final bool initialReceiving;
@@ -38,10 +39,7 @@ class _NfcPaymentScreenState extends ConsumerState<NfcPaymentScreen> {
   Future<void> _submitPayment() async {
     final amount = int.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Veuillez saisir un montant en sats valide.')),
-      );
+      UIUtils.showErrorDialog(context, 'Veuillez saisir un montant en sats valide.');
       return;
     }
 

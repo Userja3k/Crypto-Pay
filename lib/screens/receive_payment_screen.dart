@@ -8,6 +8,7 @@ import '../services/haptic_service.dart';
 import '../services/supabase_service.dart';
 import 'nfc_payment_screen.dart';
 import 'bluetooth_payment_screen.dart';
+import 'lightning_address_screen.dart';
 
 class ReceivePaymentScreen extends ConsumerStatefulWidget {
   const ReceivePaymentScreen({super.key});
@@ -39,7 +40,7 @@ class _ReceivePaymentScreenState extends ConsumerState<ReceivePaymentScreen> {
       );
 
       final bolt11 = response.lnInvoice.bolt11;
-      final paymentHash = response.lnInvoice.paymentHash ?? null;
+      final paymentHash = response.lnInvoice.paymentHash;
 
       // Record pending invoice in Supabase so webhook can match it later
       final authState = ref.read(authProvider);
@@ -298,8 +299,9 @@ class _ReceivePaymentScreenState extends ConsumerState<ReceivePaymentScreen> {
             trailing: const Icon(Icons.chevron_right, color: Colors.white24),
             onTap: () {
               HapticService.selection();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Adresse Lightning non disponible pour le moment')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LightningAddressScreen()),
               );
             },
           ),

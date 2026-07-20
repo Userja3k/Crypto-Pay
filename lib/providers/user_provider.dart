@@ -7,6 +7,7 @@ import '../services/breez_service.dart';
 import '../services/nfc_service.dart';
 import '../services/bluetooth_service.dart';
 import '../services/payment_service.dart';
+import '../services/lightning_address_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,6 +35,7 @@ final breezBalanceProvider = FutureProvider<Balance>((ref) async {
 
 final nfcServiceProvider = Provider((ref) => NfcService());
 final bluetoothServiceProvider = Provider((ref) => BluetoothService());
+final lightningAddressServiceProvider = Provider((ref) => LightningAddressService());
 
 final paymentServiceProvider = Provider((ref) {
   final nfc = ref.watch(nfcServiceProvider);

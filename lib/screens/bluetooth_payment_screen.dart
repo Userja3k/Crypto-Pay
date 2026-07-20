@@ -12,6 +12,7 @@ import '../core/widgets/water_drop_success_overlay.dart';
 import '../providers/payment_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/haptic_service.dart';
+import '../core/utils/ui_utils.dart';
 import 'payment_success_screen.dart';
 
 class BluetoothPaymentScreen extends ConsumerStatefulWidget {
@@ -68,9 +69,7 @@ class _BluetoothPaymentScreenState extends ConsumerState<BluetoothPaymentScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur scan: $e'), backgroundColor: Colors.redAccent),
-        );
+        UIUtils.showErrorDialog(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isScanning = false);
@@ -87,16 +86,12 @@ class _BluetoothPaymentScreenState extends ConsumerState<BluetoothPaymentScreen>
     } else {
       final amount = int.tryParse(_amountController.text);
       if (amount == null || amount <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Veuillez saisir un montant en sats valide.')),
-        );
+        UIUtils.showErrorDialog(context, 'Veuillez saisir un montant en sats valide.');
         return;
       }
 
       if (_selectedDevice == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sélectionnez un appareil.')),
-        );
+        UIUtils.showErrorDialog(context, 'Sélectionnez un appareil.');
         return;
       }
 
@@ -260,14 +255,14 @@ class _BluetoothPaymentScreenState extends ConsumerState<BluetoothPaymentScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: devices.map((device) {
-          final isSelected = _selectedDevice?.id == device.id;
+          final isSelected = _selectedDevice?.remoteId == device.remoteId;
           return ListTile(
             title: Text(
-              device.name.isNotEmpty ? device.name : 'Appareil inconnu',
+              device.platformName.isNotEmpty ? device.platformName : 'Appareil inconnu',
               style: const TextStyle(color: Colors.white),
             ),
             subtitle: Text(
-              device.id.id.substring(0, min(8, device.id.id.length)),
+              device.remoteId.str.substring(0, min(8, device.remoteId.str.length)),
               style: const TextStyle(color: Colors.white54, fontSize: 12),
             ),
             trailing: isSelected

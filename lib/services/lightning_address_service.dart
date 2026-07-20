@@ -18,6 +18,19 @@ class LightningAddressService {
   // ADRESSE LIGHTNING
   // ════════════════════════════════════════════════════════
 
+  Future<String?> getLightningAddress(String userId) async {
+    try {
+      final response = await _supabase
+          .from('accounts')
+          .select('lightning_address')
+          .eq('user_id', userId)
+          .maybeSingle();
+      return response?['lightning_address'] as String?;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<String> createLightningAddress({
     required String userId,
     required String username,
@@ -198,13 +211,16 @@ class LightningAddressService {
     final clean = fullName
         .toLowerCase()
         .trim()
-        .replaceAll(RegExp(r'[^a-z0-9]'), '')
-        .substring(0, 10);
-    final suffix = DateTime.now().millisecondsSinceEpoch.toString().substring(
-      8,
-      12,
-    );
-    return '$clean$suffix';
+        .replaceAll(RegExp(r'[^a-z0-9]'), '');
+    
+    final usernameBase = clean.length > 10 ? clean.substring(0, 10) : clean;
+    
+    final millis = DateTime.now().millisecondsSinceEpoch.toString();
+    final suffix = millis.length > 4 
+        ? millis.substring(millis.length - 4) 
+        : millis;
+        
+    return '$usernameBase$suffix';
   }
 
   /// Vérifie si un username est disponible

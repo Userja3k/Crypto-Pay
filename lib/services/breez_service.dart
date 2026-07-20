@@ -140,7 +140,7 @@ class BreezService {
           label: label,
         );
 
-        final status = (result.payment?.status ?? '').toString().toLowerCase();
+        final status = result.payment.status.toString().toLowerCase();
         if (status.contains('complete') || status.contains('confirmed')) {
           return result;
         }
@@ -170,11 +170,8 @@ class BreezService {
   Future<bool> isInvoiceValid(String bolt11) async {
     try {
       final invoice = await parseInvoice(bolt11);
-      if (invoice.expiry == null || invoice.timestamp == null) {
-        return true;
-      }
       final expiryDate = DateTime.fromMillisecondsSinceEpoch(
-        (invoice.timestamp! + invoice.expiry!) * 1000,
+        (invoice.timestamp + invoice.expiry) * 1000,
       );
       return expiryDate.isAfter(DateTime.now());
     } catch (_) {

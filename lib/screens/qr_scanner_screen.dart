@@ -31,7 +31,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
 
   void _initTorch() async {
     try {
-      _hasTorch = await _controller.hasTorch;
+      _hasTorch = _controller.hasTorch;
       if (mounted) setState(() {});
     } catch (_) {}
   }

@@ -134,21 +134,19 @@ class PaymentService {
         label: note,
       );
 
-      final status = (sendResult.payment?.status ?? '')
-          .toString()
-          .toLowerCase();
+      final status = sendResult.payment.status.toString().toLowerCase();
       if (status.contains('complete') || status.contains('confirmed')) {
         // 4. Enregistrement en DB
         await _supabaseService.recordNfcPayment(
           userId: userId,
           amountSats: invoiceSats,
           bolt11: result.bolt11!,
-          paymentHash: sendResult.payment?.id,
+          paymentHash: sendResult.payment.id,
           note: note,
         );
 
         return PaymentResult.success(
-          paymentHash: sendResult.payment?.id ?? '',
+          paymentHash: sendResult.payment.id,
           amountSats: invoiceSats,
           method: PaymentMethod.nfc,
           counterpartyName: result.counterpartyName,
@@ -156,7 +154,7 @@ class PaymentService {
       }
 
       return PaymentResult.failure(
-        error: sendResult.payment?.error ?? 'Paiement NFC échoué',
+        error: sendResult.payment.error ?? 'Paiement NFC échoué',
         method: PaymentMethod.nfc,
       );
     } catch (e) {
@@ -290,7 +288,7 @@ class PaymentService {
         userId: userId,
         amountSats: amountSats,
         bolt11: invoice.lnInvoice.bolt11,
-        paymentHash: sendResult.payment?.id,
+        paymentHash: sendResult.payment.id,
         note: note,
       );
 
@@ -298,10 +296,10 @@ class PaymentService {
       await _bluetoothService.disconnect();
 
       return PaymentResult.success(
-        paymentHash: sendResult.payment?.id ?? '',
+        paymentHash: sendResult.payment.id,
         amountSats: amountSats,
         method: PaymentMethod.bluetooth,
-        counterpartyName: device.name.isNotEmpty ? device.name : 'Appareil Bluetooth',
+        counterpartyName: device.platformName.isNotEmpty ? device.platformName : 'Appareil Bluetooth',
       );
     } catch (e) {
       await _bluetoothService.disconnect();

@@ -8,6 +8,7 @@ import '../core/widgets/glass_button.dart';
 import '../core/utils/security_utils.dart';
 import '../services/haptic_service.dart';
 import '../providers/user_provider.dart';
+import '../core/utils/ui_utils.dart';
 import 'home_screen.dart';
 import 'password_recovery_screen.dart';
 
@@ -49,9 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs')),
-      );
+      UIUtils.showErrorDialog(context, 'Veuillez remplir tous les champs');
       return;
     }
 
@@ -64,9 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       
       if (salt == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Utilisateur non trouvé')),
-          );
+          UIUtils.showErrorDialog(context, 'Utilisateur non trouvé');
         }
         return;
       }
@@ -100,16 +97,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur: ${result['message'] ?? "Identifiants incorrects"}')),
-          );
+          UIUtils.showErrorDialog(context, result['message'] ?? "Identifiants incorrects");
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur connexion: $e')),
-        );
+        UIUtils.showErrorDialog(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

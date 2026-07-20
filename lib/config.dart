@@ -29,7 +29,7 @@ const String kBreezServer = String.fromEnvironment(
 
 const String kBreezChainnotifierUrl = String.fromEnvironment(
   'BREEZ_CHAINNOTIFIER_URL',
-  defaultValue: 'https://mempool.space/api',
+  defaultValue: 'https://mempool.space/testnet/api',
 );
 
 const String kBreezWebhookUrl = String.fromEnvironment(

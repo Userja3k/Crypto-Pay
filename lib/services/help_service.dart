@@ -16,8 +16,11 @@ class HelpService {
 
   Future<void> openHelpLink(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
-    else throw Exception('Impossible d\'ouvrir le lien');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw Exception('Impossible d\'ouvrir le lien');
+    }
   }
 
   String getDocumentationUrl() => 'https://docs.crypto-pay.com';

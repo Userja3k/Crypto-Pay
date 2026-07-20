@@ -162,8 +162,9 @@ class SupabaseService {
     final accountId = accountResp == null
         ? null
         : (accountResp as Map)['id'] as String?;
-    if (accountId == null)
+    if (accountId == null) {
       return {'status': 'failed', 'message': 'Account not found'};
+    }
 
     final insertResp = await _client
         .from('transactions')
@@ -180,8 +181,9 @@ class SupabaseService {
         .select()
         .maybeSingle();
 
-    if (insertResp == null)
+    if (insertResp == null) {
       return {'status': 'failed', 'message': 'Insert failed'};
+    }
     return {'status': 'ok', 'transaction': insertResp};
   }
 
@@ -212,8 +214,9 @@ class SupabaseService {
         'p_note': note,
       },
     );
-    if (response is List && response.isNotEmpty)
+    if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
+    }
     return response is Map ? response as Map<String, dynamic> : {};
   }
 
@@ -236,8 +239,9 @@ class SupabaseService {
         'p_note': note,
       },
     );
-    if (response is List && response.isNotEmpty)
+    if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;
+    }
     return response is Map ? response as Map<String, dynamic> : {};
   }
 
@@ -407,7 +411,23 @@ class SupabaseService {
         .select('full_name, email, phone')
         .eq('id', userId)
         .single();
-    return response as Map<String, dynamic>;
+    return response;
+  }
+
+  Future<bool> changePin({
+    required String userId,
+    required String oldPinHash,
+    required String newPinHash,
+  }) async {
+    final response = await _client.rpc(
+      'change_pin',
+      params: {
+        'p_user_id': userId,
+        'p_old_pin_hash': oldPinHash,
+        'p_new_pin_hash': newPinHash,
+      },
+    );
+    return response as bool? ?? false;
   }
 
   // ════════════════════════════════════════════════════════════
