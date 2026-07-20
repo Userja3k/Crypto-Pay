@@ -34,6 +34,18 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
     });
   }
 
+  Future<void> _openHelpLink(String url) async {
+    try {
+      await HelpService().openHelpLink(url);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur ouverture lien : $error'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,14 +69,14 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
               children: [
                 Expanded(
                   child: GlassButton(
-                    onPressed: () => HelpService().openHelpLink(HelpService().getSupportUrl()),
+                    onPressed: () async => await _openHelpLink(HelpService().getSupportUrl()),
                     child: const Text('Support'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: GlassButton(
-                    onPressed: () => HelpService().openHelpLink(HelpService().getDocumentationUrl()),
+                    onPressed: () async => await _openHelpLink(HelpService().getDocumentationUrl()),
                     child: const Text('Doc.'),
                   ),
                 ),

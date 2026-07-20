@@ -110,11 +110,13 @@ CREATE TABLE IF NOT EXISTS cryptopay.accounts (
     -- Lightning
     lightning_node_pubkey VARCHAR(66),
     last_lightning_sync_at TIMESTAMPTZ,
+    lightning_address TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
 
-    UNIQUE(user_id)
+    UNIQUE(user_id),
+    UNIQUE(lightning_address)
 );
 
 -- TABLE: transactions
