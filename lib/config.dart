@@ -34,5 +34,20 @@ const String kBreezChainnotifierUrl = String.fromEnvironment(
 
 const String kBreezWebhookUrl = String.fromEnvironment(
   'BREEZ_WEBHOOK_URL',
-  defaultValue: '',
+  defaultValue: 'https://oclsoevlkizzkpjdamff.supabase.co/functions/v1/breez-webhook',
+);
+
+const String kPriceOracleUrl = String.fromEnvironment(
+  'PRICE_ORACLE_URL',
+  defaultValue: 'https://oclsoevlkizzkpjdamff.supabase.co/functions/v1/price-oracle',
+);
+
+const String kLnurlPayUrl = String.fromEnvironment(
+  'LNURL_PAY_URL',
+  defaultValue: 'https://oclsoevlkizzkpjdamff.supabase.co/functions/v1/lnurl-pay',
+);
+
+const String kLndIntegrationUrl = String.fromEnvironment(
+  'LND_INTEGRATION_URL',
+  defaultValue: 'https://oclsoevlkizzkpjdamff.supabase.co/functions/v1/lnd-integration',
 );
