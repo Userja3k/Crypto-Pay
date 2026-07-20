@@ -130,7 +130,7 @@ class LightningAddressService {
           .gt('expires_at', DateTime.now().toIso8601String())
           .maybeSingle();
 
-      return response as Map<String, dynamic>?;
+      return response;
     } catch (e) {
       return null;
     }
@@ -196,7 +196,7 @@ class LightningAddressService {
           .gt('expires_at', DateTime.now().toIso8601String())
           .maybeSingle();
 
-      return response as Map<String, dynamic>?;
+      return response;
     } catch (e) {
       return null;
     }

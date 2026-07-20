@@ -26,8 +26,11 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
   void _filter(String q) {
     setState(() {
       _query = q;
-      if (q.isEmpty) _faqs = HelpService().getFaqs();
-      else _faqs = HelpService().getFaqs().where((f) => f.question.toLowerCase().contains(q.toLowerCase()) || f.answer.toLowerCase().contains(q.toLowerCase())).toList();
+      if (q.isEmpty) {
+        _faqs = HelpService().getFaqs();
+      } else {
+        _faqs = HelpService().getFaqs().where((f) => f.question.toLowerCase().contains(q.toLowerCase()) || f.answer.toLowerCase().contains(q.toLowerCase())).toList();
+      }
     });
   }
 
