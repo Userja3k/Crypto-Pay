@@ -26,9 +26,24 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
   void _filter(String q) {
     setState(() {
       _query = q;
-      if (q.isEmpty) _faqs = HelpService().getFaqs();
-      else _faqs = HelpService().getFaqs().where((f) => f.question.toLowerCase().contains(q.toLowerCase()) || f.answer.toLowerCase().contains(q.toLowerCase())).toList();
+      if (q.isEmpty) {
+        _faqs = HelpService().getFaqs();
+      } else {
+        _faqs = HelpService().getFaqs().where((f) => f.question.toLowerCase().contains(q.toLowerCase()) || f.answer.toLowerCase().contains(q.toLowerCase())).toList();
+      }
     });
+  }
+
+  Future<void> _openHelpLink(String url) async {
+    try {
+      await HelpService().openHelpLink(url);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur ouverture lien : $error'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   @override
@@ -54,14 +69,14 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
               children: [
                 Expanded(
                   child: GlassButton(
-                    onPressed: () => HelpService().openHelpLink(HelpService().getSupportUrl()),
+                    onPressed: () async => await _openHelpLink(HelpService().getSupportUrl()),
                     child: const Text('Support'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: GlassButton(
-                    onPressed: () => HelpService().openHelpLink(HelpService().getDocumentationUrl()),
+                    onPressed: () async => await _openHelpLink(HelpService().getDocumentationUrl()),
                     child: const Text('Doc.'),
                   ),
                 ),

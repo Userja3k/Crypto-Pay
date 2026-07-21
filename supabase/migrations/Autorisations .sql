@@ -20,27 +20,25 @@ SET search_path TO cryptopay, public;
 -- End of reset.sql
 
 
--- 1. Déplacer les types ENUM vers public
-ALTER TYPE cryptopay.kyc_level_enum SET SCHEMA public;
-ALTER TYPE cryptopay.transaction_status_enum SET SCHEMA public;
-ALTER TYPE cryptopay.transaction_type_enum SET SCHEMA public;
-ALTER TYPE cryptopay.user_role_enum SET SCHEMA public;
-ALTER TYPE cryptopay.device_type_enum SET SCHEMA public;
+-- ALTER TYPE cryptopay.kyc_level_enum SET SCHEMA public;
+-- ALTER TYPE cryptopay.transaction_status_enum SET SCHEMA public;
+-- ALTER TYPE cryptopay.transaction_type_enum SET SCHEMA public;
+-- ALTER TYPE cryptopay.user_role_enum SET SCHEMA public;
+-- ALTER TYPE cryptopay.device_type_enum SET SCHEMA public;
 
--- 2. Déplacer TOUTES les tables vers public
-ALTER TABLE cryptopay.users SET SCHEMA public;
-ALTER TABLE cryptopay.accounts SET SCHEMA public;
-ALTER TABLE cryptopay.transactions SET SCHEMA public;
-ALTER TABLE cryptopay.sessions SET SCHEMA public;
-ALTER TABLE cryptopay.notifications SET SCHEMA public;
-ALTER TABLE cryptopay.kyc_documents SET SCHEMA public;
-ALTER TABLE cryptopay.child_limits SET SCHEMA public;
-ALTER TABLE cryptopay.pending_approvals SET SCHEMA public;
-ALTER TABLE cryptopay.exchange_rates SET SCHEMA public;
-ALTER TABLE cryptopay.limits SET SCHEMA public;
-ALTER TABLE cryptopay.lnurl_pay SET SCHEMA public;
-ALTER TABLE cryptopay.lnurl_withdraw SET SCHEMA public;
-ALTER TABLE cryptopay.settings SET SCHEMA public;
+-- ALTER TABLE cryptopay.users SET SCHEMA public;
+-- ALTER TABLE cryptopay.accounts SET SCHEMA public;
+-- ALTER TABLE cryptopay.transactions SET SCHEMA public;
+-- ALTER TABLE cryptopay.sessions SET SCHEMA public;
+-- ALTER TABLE cryptopay.notifications SET SCHEMA public;
+-- ALTER TABLE cryptopay.kyc_documents SET SCHEMA public;
+-- ALTER TABLE cryptopay.child_limits SET SCHEMA public;
+-- ALTER TABLE cryptopay.pending_approvals SET SCHEMA public;
+-- ALTER TABLE cryptopay.exchange_rates SET SCHEMA public;
+-- ALTER TABLE cryptopay.limits SET SCHEMA public;
+-- ALTER TABLE cryptopay.lnurl_pay SET SCHEMA public;
+-- ALTER TABLE cryptopay.lnurl_withdraw SET SCHEMA public;
+-- ALTER TABLE cryptopay.settings SET SCHEMA public;
 
 -- 3. Rafraîchir le cache de l'API
 NOTIFY pgrst, 'reload schema';

@@ -16,10 +16,16 @@ class HelpService {
 
   Future<void> openHelpLink(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      throw Exception('Impossible d\'ouvrir le lien');
+    try {
+      var launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        launched = await launchUrl(uri);
+      }
+      if (!launched) {
+        throw Exception('Impossible d\'ouvrir le lien');
+      }
+    } catch (error) {
+      throw Exception('Impossible d\'ouvrir le lien: $error');
     }
   }
 
