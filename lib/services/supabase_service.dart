@@ -264,21 +264,36 @@ class SupabaseService {
   Future<List<Map<String, dynamic>>> getTransactionHistory(
     String userId,
   ) async {
-    final response = await _client.rpc(
-      'get_transaction_history',
-      params: {'p_user_id': userId, 'p_limit': 50},
-    );
-    return List<Map<String, dynamic>>.from(response as List);
+    try {
+      final response = await _client.rpc(
+        'get_transaction_history',
+        params: {
+          'p_user_id': userId, 
+          'p_limit': 50,
+          'p_offset': 0,
+        },
+      );
+      return List<Map<String, dynamic>>.from(response as List);
+    } catch (e) {
+      debugPrint('Error fetching transaction history: $e');
+      // If the specific RPC fails, fallback to a direct query if possible or rethrow
+      rethrow;
+    }
   }
 
   Future<List<Map<String, dynamic>>> getPendingApprovals(
     String parentUserId,
   ) async {
-    final response = await _client.rpc(
-      'get_pending_approvals',
-      params: {'p_parent_user_id': parentUserId},
-    );
-    return List<Map<String, dynamic>>.from(response as List);
+    try {
+      final response = await _client.rpc(
+        'get_pending_approvals',
+        params: {'p_parent_user_id': parentUserId},
+      );
+      return List<Map<String, dynamic>>.from(response as List);
+    } catch (e) {
+      debugPrint('Error fetching pending approvals: $e');
+      return [];
+    }
   }
 
   Future<void> approveTransaction(

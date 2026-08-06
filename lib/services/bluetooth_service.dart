@@ -14,10 +14,10 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 /// UUIDs du protocole Crypto-Pay
 class CryptoPayBleUuid {
-  static const String serviceUuid = "0000CRYP-0000-1000-8000-00805F9B34FB";
-  static const String requestChar = "0000REQ1-0000-1000-8000-00805F9B34FB";
-  static const String responseChar = "0000RES1-0000-1000-8000-00805F9B34FB";
-  static const String statusChar = "0000STA1-0000-1000-8000-00805F9B34FB";
+  static const String serviceUuid = "0000AFEE-0000-1000-8000-00805F9B34FB";
+  static const String requestChar = "0000AFE1-0000-1000-8000-00805F9B34FB";
+  static const String responseChar = "0000AFE2-0000-1000-8000-00805F9B34FB";
+  static const String statusChar = "0000AFE3-0000-1000-8000-00805F9B34FB";
 }
 
 /// Types de messages
@@ -395,36 +395,37 @@ class BluetoothService {
     _setState(BleState.idle);
   }
 
-  /// Scan uniquement les appareils Crypto-Pay
   Stream<BluetoothDevice> scanCryptoPayDevices({
     Duration timeout = const Duration(seconds: 15),
-  }) async* {
+  }) {
+    final controller = StreamController<BluetoothDevice>();
     _setState(BleState.scanning);
     _isScanning = true;
 
-    try {
-      await FlutterBluePlus.startScan(
-        timeout: timeout,
-        withServices: [Guid(CryptoPayBleUuid.serviceUuid)],
-      );
+    FlutterBluePlus.startScan(
+      timeout: timeout,
+      withServices: [Guid(CryptoPayBleUuid.serviceUuid)],
+    ).catchError((e) {
+      debugPrint('Erreur startScan: $e');
+    });
 
-      await for (final results in FlutterBluePlus.scanResults) {
-        for (final scanResult in results) {
-          final hasService = scanResult.advertisementData.serviceUuids.any(
-            (uuid) => uuid.toString().toUpperCase().contains(
-              CryptoPayBleUuid.serviceUuid.toUpperCase().substring(0, 8),
-            ),
-          );
-          if (hasService) {
-            yield scanResult.device;
-          }
-        }
+    final subscription = FlutterBluePlus.scanResults.listen((results) {
+      for (final result in results) {
+        controller.add(result.device);
       }
-    } finally {
-      await FlutterBluePlus.stopScan();
+    });
+
+    Timer(timeout, () {
+      subscription.cancel();
+      FlutterBluePlus.stopScan();
       _isScanning = false;
       _setState(BleState.idle);
-    }
+      if (!controller.isClosed) {
+        controller.close();
+      }
+    });
+
+    return controller.stream;
   }
 
   // ════════════════════════════════════════════════════════════
@@ -451,14 +452,13 @@ class BluetoothService {
     try {
       // 1. Connexion
       await device.connect(
-        license: License.nonprofit,
         timeout: timeout,
       );
       _connectedDevice = device;
 
       // 2. Découverte des services
       final services = await device.discoverServices();
-      dynamic cryptoService;
+      fbp.BluetoothService? cryptoService;
 
       for (final service in services) {
         if (service.uuid.toString().toUpperCase().contains(
@@ -511,19 +511,23 @@ class BluetoothService {
       _setState(BleState.idle);
 
       timeoutTimer.cancel();
-      completer.complete(BleResult.success(
-        bolt11: '',
-        paymentHash: '',
-        amountSats: 0,
-        counterpartyName: device.platformName,
-      ));
+      if (!completer.isCompleted) {
+        completer.complete(BleResult.success(
+          bolt11: '',
+          paymentHash: '',
+          amountSats: 0,
+          counterpartyName: device.platformName,
+        ));
+      }
 
       return await completer.future;
     } catch (e) {
       _setState(BleState.failure);
       await _disconnect();
       timeoutTimer.cancel();
-      completer.complete(BleResult.failure('Erreur de connexion: $e'));
+      if (!completer.isCompleted) {
+        completer.complete(BleResult.failure('Erreur de connexion: $e'));
+      }
       return await completer.future;
     }
   }
@@ -582,27 +586,37 @@ class BluetoothService {
       if (status == BleResponseStatus.confirmed) {
         _setState(BleState.success);
         timeoutTimer.cancel();
-        completer.complete(BleResult.success(
-          bolt11: bolt11,
-          paymentHash: paymentHash ?? '',
-          amountSats: amountSats,
-          counterpartyName: _connectedDevice?.platformName,
-          message: response,
-        ));
+        if (!completer.isCompleted) {
+          completer.complete(BleResult.success(
+            bolt11: bolt11,
+            paymentHash: paymentHash ?? '',
+            amountSats: amountSats,
+            counterpartyName: _connectedDevice?.platformName,
+            message: response,
+          ));
+        }
       } else if (status == BleResponseStatus.rejected) {
-        completer.complete(BleResult.failure('Paiement rejeté'));
+        if (!completer.isCompleted) {
+          completer.complete(BleResult.failure('Paiement rejeté'));
+        }
       } else if (status == BleResponseStatus.failed) {
         final error = response.payload['error'] ?? 'Erreur inconnue';
-        completer.complete(BleResult.failure(error));
+        if (!completer.isCompleted) {
+          completer.complete(BleResult.failure(error));
+        }
       } else {
-        completer.complete(BleResult.failure('Statut inconnu: $status'));
+        if (!completer.isCompleted) {
+          completer.complete(BleResult.failure('Statut inconnu: $status'));
+        }
       }
 
       return await completer.future;
     } catch (e) {
       _setState(BleState.failure);
       timeoutTimer.cancel();
-      completer.complete(BleResult.failure('Erreur: $e'));
+      if (!completer.isCompleted) {
+        completer.complete(BleResult.failure('Erreur: $e'));
+      }
       return await completer.future;
     }
   }
@@ -647,7 +661,9 @@ class BluetoothService {
           request.requestId ?? 'unknown',
           'Données de paiement invalides',
         ));
-        completer.complete(BleResult.failure('Données de paiement invalides'));
+        if (!completer.isCompleted) {
+          completer.complete(BleResult.failure('Données de paiement invalides'));
+        }
         return await completer.future;
       }
 
@@ -660,19 +676,23 @@ class BluetoothService {
 
       _setState(BleState.success);
       timeoutTimer.cancel();
-      completer.complete(BleResult.success(
-        bolt11: bolt11,
-        paymentHash: '',
-        amountSats: amount,
-        counterpartyName: senderId,
-        message: request,
-      ));
+      if (!completer.isCompleted) {
+        completer.complete(BleResult.success(
+          bolt11: bolt11,
+          paymentHash: '',
+          amountSats: amount,
+          counterpartyName: senderId,
+          message: request,
+        ));
+      }
 
       return await completer.future;
     } catch (e) {
       _setState(BleState.failure);
       timeoutTimer.cancel();
-      completer.complete(BleResult.failure('Erreur: $e'));
+      if (!completer.isCompleted) {
+        completer.complete(BleResult.failure('Erreur: $e'));
+      }
       return await completer.future;
     }
   }

@@ -256,19 +256,22 @@ class _BluetoothPaymentScreenState extends ConsumerState<BluetoothPaymentScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: devices.map((device) {
           final isSelected = _selectedDevice?.remoteId == device.remoteId;
-          return ListTile(
-            title: Text(
-              device.platformName.isNotEmpty ? device.platformName : 'Appareil inconnu',
-              style: const TextStyle(color: Colors.white),
+          return Material(
+            color: Colors.transparent,
+            child: ListTile(
+              title: Text(
+                device.platformName.isNotEmpty ? device.platformName : 'Appareil inconnu',
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                device.remoteId.str.substring(0, min(8, device.remoteId.str.length)),
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+              trailing: isSelected
+                  ? const Icon(Icons.check_circle, color: Colors.greenAccent)
+                  : null,
+              onTap: () => setState(() => _selectedDevice = device),
             ),
-            subtitle: Text(
-              device.remoteId.str.substring(0, min(8, device.remoteId.str.length)),
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
-            ),
-            trailing: isSelected
-                ? const Icon(Icons.check_circle, color: Colors.greenAccent)
-                : null,
-            onTap: () => setState(() => _selectedDevice = device),
           );
         }).toList(),
       ),

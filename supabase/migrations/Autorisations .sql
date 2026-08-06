@@ -107,3 +107,58 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 4. Accorder à nouveau les droits
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
+
+ALTER TABLE accounts ADD COLUMN lightning_address TEXT;
+
+
+-- Créer un alias de la fonction dans le schéma public pour qu'elle soit accessible par l'API
+CREATE OR REPLACE FUNCTION public.get_transaction_history(p_user_id UUID, p_limit INT DEFAULT 20, p_offset INT DEFAULT 0)
+RETURNS SETOF json AS $$
+BEGIN
+    RETURN QUERY
+    SELECT row_to_json(t) FROM (
+        SELECT * FROM cryptopay.get_transaction_history(p_user_id, p_limit, p_offset)
+    ) t;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Donne les permissions d'exécution aux utilisateurs connectés
+GRANT EXECUTE ON FUNCTION public.get_transaction_history(UUID, INT, INT) TO authenticated;
+
+-- 1. Supprimer les anciennes versions pour pouvoir changer le type de retour
+DROP FUNCTION IF EXISTS public.create_lnurl_pay(UUID, BIGINT, TEXT, BOOLEAN, INT);
+DROP FUNCTION IF EXISTS public.get_balance(UUID);
+
+-- 2. Créer la nouvelle version de create_lnurl_pay
+CREATE OR REPLACE FUNCTION public.create_lnurl_pay(
+    p_user_id UUID,
+    p_fixed_amount_sats BIGINT DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_requires_comment BOOLEAN DEFAULT FALSE,
+    p_expires_in_days INT DEFAULT 365
+)
+RETURNS SETOF json AS $$
+BEGIN
+    RETURN QUERY
+    SELECT row_to_json(t) FROM (
+        SELECT * FROM cryptopay.create_lnurl_pay(
+            p_user_id, p_fixed_amount_sats, p_description, p_requires_comment, p_expires_in_days
+        )
+    ) t;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 3. Créer la nouvelle version de get_balance
+CREATE OR REPLACE FUNCTION public.get_balance(p_user_id UUID)
+RETURNS SETOF json AS $$
+BEGIN
+    RETURN QUERY
+    SELECT row_to_json(t) FROM (
+        SELECT * FROM cryptopay.get_balance(p_user_id)
+    ) t;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 4. Accorder les permissions
+GRANT EXECUTE ON FUNCTION public.create_lnurl_pay(UUID, BIGINT, TEXT, BOOLEAN, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_balance(UUID) TO authenticated;

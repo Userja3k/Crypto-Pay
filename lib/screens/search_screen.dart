@@ -100,25 +100,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       child: GlassContainer(
         padding: const EdgeInsets.all(12),
         borderRadius: 20,
-        child: ListTile(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SendPaymentScreen(
-                  recipientId: user['id'],
-                  recipientName: user['full_name'],
+        child: Material(
+          color: Colors.transparent,
+          child: ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SendPaymentScreen(
+                    recipientId: user['id'],
+                    recipientName: user['full_name'],
+                  ),
                 ),
-              ),
-            );
-          },
-          leading: CircleAvatar(
-            backgroundColor: LiquidGlassTheme.accent.withValues(alpha: 0.2),
-            child: Text(user['full_name'][0], style: const TextStyle(color: LiquidGlassTheme.accent)),
+              );
+            },
+            leading: CircleAvatar(
+              backgroundColor: LiquidGlassTheme.accent.withValues(alpha: 0.2),
+              child: Text(user['full_name'][0], style: const TextStyle(color: LiquidGlassTheme.accent)),
+            ),
+            title: Text(user['full_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(user['referral_code'] ?? 'CP-XXXX', style: const TextStyle(color: Colors.white38)),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white24),
           ),
-          title: Text(user['full_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(user['referral_code'] ?? 'CP-XXXX', style: const TextStyle(color: Colors.white38)),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white24),
         ),
       ),
     );

@@ -23,6 +23,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
   bool _biometricsEnabled = false;
   String _biometricType = 'face_id'; // 'face_id' or 'fingerprint'
 
@@ -257,7 +258,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               
               _buildTextField('Email', _emailController, icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 16),
-              _buildTextField('Mot de passe', _passwordController, icon: Icons.lock_outline, obscureText: true),
+              _buildTextField(
+                'Mot de passe', 
+                _passwordController, 
+                icon: Icons.lock_outline, 
+                obscureText: _obscurePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white38,
+                  ),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
               const SizedBox(height: 12),
               
               Align(
@@ -289,7 +302,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {IconData? icon, bool obscureText = false, TextInputType? keyboardType}) {
+  Widget _buildTextField(String label, TextEditingController controller, {IconData? icon, bool obscureText = false, TextInputType? keyboardType, Widget? suffixIcon}) {
     return GlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       borderRadius: 16,
@@ -303,6 +316,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           labelStyle: const TextStyle(color: Colors.white60),
           border: InputBorder.none,
           icon: icon != null ? Icon(icon, color: LiquidGlassTheme.accent) : null,
+          suffixIcon: suffixIcon,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
         ),
