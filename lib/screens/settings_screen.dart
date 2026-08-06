@@ -60,11 +60,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildTile(Icons.lock_outline, 'Modifier le code PIN', () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePinScreen()));
               }),
-              SwitchListTile(
-                title: const Text('Face ID / Empreinte'),
-                value: _faceId,
-                onChanged: (v) => setState(() => _faceId = v),
-                activeThumbColor: LiquidGlassTheme.accent,
+              Material(
+                color: Colors.transparent,
+                child: SwitchListTile(
+                  title: const Text('Face ID / Empreinte'),
+                  value: _faceId,
+                  onChanged: (v) => setState(() => _faceId = v),
+                  activeThumbColor: LiquidGlassTheme.accent,
+                ),
               ),
             ]),
             const SizedBox(height: 24),
@@ -145,14 +148,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildTile(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white70),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right, color: Colors.white24),
-      onTap: () {
-        HapticService.selection();
-        onTap();
-      },
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(icon, color: Colors.white70),
+        title: Text(title),
+        trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+        onTap: () {
+          HapticService.selection();
+          onTap();
+        },
+      ),
     );
   }
 }

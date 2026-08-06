@@ -53,12 +53,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   // Step 3 (Adult) / 4 (Minor): Security
   final _pinController = TextEditingController();
   final _confirmPinController = TextEditingController();
+  bool _obscurePin = true;
+  bool _obscureConfirmPin = true;
   bool _useBiometrics = true;
 
   // Step 4 (Adult) / 5 (Minor): Finalisation
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
   bool _acceptPrivacy = false;
 
@@ -654,16 +658,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             'PIN à 6 chiffres',
             _pinController,
             icon: Icons.lock_outline,
-            obscureText: true,
+            obscureText: _obscurePin,
             keyboardType: TextInputType.number,
+            suffixIcon: IconButton(
+              icon: Icon(_obscurePin ? Icons.visibility_off : Icons.visibility, color: Colors.white38),
+              onPressed: () => setState(() => _obscurePin = !_obscurePin),
+            ),
           ),
           const SizedBox(height: 16),
           _buildTextField(
             'Confirmation PIN',
             _confirmPinController,
             icon: Icons.lock_outline,
-            obscureText: true,
+            obscureText: _obscureConfirmPin,
             keyboardType: TextInputType.number,
+            suffixIcon: IconButton(
+              icon: Icon(_obscureConfirmPin ? Icons.visibility_off : Icons.visibility, color: Colors.white38),
+              onPressed: () => setState(() => _obscureConfirmPin = !_obscureConfirmPin),
+            ),
           ),
           const SizedBox(height: 32),
           
@@ -713,9 +725,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           
           _buildTextField('Email', _emailController, icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
           const SizedBox(height: 16),
-          _buildTextField('Mot de passe', _passwordController, icon: Icons.lock_outline, obscureText: true),
+          _buildTextField(
+            'Mot de passe', 
+            _passwordController, 
+            icon: Icons.lock_outline, 
+            obscureText: _obscurePassword,
+            suffixIcon: IconButton(
+              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            ),
+          ),
           const SizedBox(height: 16),
-          _buildTextField('Confirmation du mot de passe', _confirmPasswordController, icon: Icons.lock_outline, obscureText: true),
+          _buildTextField(
+            'Confirmation du mot de passe', 
+            _confirmPasswordController, 
+            icon: Icons.lock_outline, 
+            obscureText: _obscureConfirmPassword,
+            suffixIcon: IconButton(
+              icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38),
+              onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+            ),
+          ),
           
           const SizedBox(height: 24),
           
@@ -766,6 +796,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     TextInputType? keyboardType,
     bool readOnly = false,
     VoidCallback? onTap,
+    Widget? suffixIcon,
   }) {
     return GlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -782,6 +813,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           labelStyle: const TextStyle(color: Colors.white60),
           border: InputBorder.none,
           icon: icon != null ? Icon(icon, color: LiquidGlassTheme.accent) : null,
+          suffixIcon: suffixIcon,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
         ),

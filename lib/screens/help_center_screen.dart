@@ -89,6 +89,22 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
   }
 
   Widget _faqItem(FaqItem faq) {
-    return GlassContainer(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(16), borderRadius: 16, child: ExpansionTile(title: Text(faq.question, style: const TextStyle(color: Colors.white)), children: [Padding(padding: const EdgeInsets.all(12), child: Text(faq.answer, style: const TextStyle(color: Colors.white70)))]));
+    return GlassContainer(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      child: Material(
+        color: Colors.transparent,
+        child: ExpansionTile(
+          title: Text(faq.question, style: const TextStyle(color: Colors.white)),
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(faq.answer, style: const TextStyle(color: Colors.white70)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -20,7 +20,7 @@ void main() async {
   // On Android/iOS/macOS/Linux this can be enabled later.
   // For Windows we keep Breez disabled so the app doesn't crash on startup.
   if (!Platform.isWindows) {
-    // TODO: optionally initialize Breez on platforms that support it.
+    await BreezService().initialize();
   }
 
   runApp(const ProviderScope(child: CryptoPayApp()));
