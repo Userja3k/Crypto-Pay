@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:breez_sdk/bridge_generated.dart';
+import '../config.dart';
 import '../core/theme.dart';
 import '../core/widgets/glass_container.dart';
 import '../providers/user_provider.dart';
@@ -21,6 +23,29 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _ensureBreezConnected();
+  }
+
+  Future<void> _ensureBreezConnected() async {
+    final breez = ref.read(breezServiceProvider);
+    if (!breez.isConnected && kBreezApiKey.isNotEmpty) {
+      try {
+        await breez.connect(
+          apiKey: kBreezApiKey,
+          breezServer: kBreezServer,
+          chainnotifierUrl: kBreezChainnotifierUrl,
+          network: Network.Testnet,
+        );
+        ref.read(breezInitializedProvider.notifier).state = true;
+      } catch (e) {
+        debugPrint('Erreur connection Breez dans HomeScreen: $e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);

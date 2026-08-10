@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart' as fbp;
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 // ════════════════════════════════════════════════════════════════
@@ -452,6 +453,7 @@ class BluetoothService {
     try {
       // 1. Connexion
       await device.connect(
+        license: fbp.License.nonprofit,
         timeout: timeout,
       );
       _connectedDevice = device;
@@ -654,7 +656,7 @@ class BluetoothService {
       final bolt11 = request.payload['bolt11'] as String?;
       final amount = request.payload['amount'] as int?;
       final senderId = request.payload['senderId'] as String?;
-      final memo = request.payload['memo'] as String?;
+      final _ = request.payload['memo'] as String?;
 
       if (bolt11 == null || amount == null) {
         await _sendMessage(BleMessage.error(

@@ -47,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         final breez = ref.read(breezServiceProvider);
         try {
           if (kBreezApiKey.isNotEmpty) {
-            if (!breez.isInitialized) {
+            if (!breez.isConnected) {
               await breez.connect(
                 apiKey: kBreezApiKey,
                 breezServer: kBreezServer,

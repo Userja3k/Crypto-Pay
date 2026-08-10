@@ -162,3 +162,150 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 4. Accorder les permissions
 GRANT EXECUTE ON FUNCTION public.create_lnurl_pay(UUID, BIGINT, TEXT, BOOLEAN, INT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_balance(UUID) TO authenticated;
+
+-- 1. Supprimer les versions en conflit pour nettoyer le schéma
+DROP FUNCTION IF EXISTS public.get_transaction_history(UUID, INT);
+DROP FUNCTION IF EXISTS public.get_transaction_history(UUID, INT, INT);
+
+-- 2. Recréer la version unique et correcte
+CREATE OR REPLACE FUNCTION public.get_transaction_history(
+    p_user_id UUID,
+    p_limit INT DEFAULT 20,
+    p_offset INT DEFAULT 0
+)
+RETURNS SETOF json AS $$
+BEGIN
+    RETURN QUERY
+    SELECT row_to_json(t) FROM (
+        SELECT * FROM cryptopay.get_transaction_history(p_user_id, p_limit, p_offset)
+    ) t;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 3. Redonner les droits d'accès
+GRANT EXECUTE ON FUNCTION public.get_transaction_history(UUID, INT, INT) TO authenticated;
+
+-- 1. On s'assure que les tables sont bien dans le schéma public (au cas où elles y seraient déjà)
+-- Si elles n'y sont pas, elles seront créées par vos migrations initiales ou sont déjà là.
+
+-- 2. Réparation de la fonction get_transaction_history (Directement dans PUBLIC)
+DROP FUNCTION IF EXISTS public.get_transaction_history(UUID, INT, INT, VARCHAR);
+DROP FUNCTION IF EXISTS public.get_transaction_history(UUID, INT, INT);
+
+CREATE OR REPLACE FUNCTION public.get_transaction_history(
+    p_user_id UUID,
+    p_limit INT DEFAULT 20,
+    p_offset INT DEFAULT 0,
+    p_transaction_type VARCHAR DEFAULT NULL
+)
+RETURNS SETOF json AS $$
+BEGIN
+    RETURN QUERY
+    SELECT row_to_json(t) FROM (
+        SELECT
+            tr.id,
+            tr.amount_usd,
+            tr.fee_usd,
+            (SELECT u.full_name FROM public.users u WHERE u.id = tr.counterparty_user_id) AS counterparty_name,
+            tr.transaction_type::VARCHAR,
+            tr.note,
+            tr.status::VARCHAR,
+            tr.created_at,
+            (tr.transaction_type = 'receive') AS is_incoming
+        FROM public.transactions tr
+        JOIN public.accounts a ON a.id = tr.account_id
+        WHERE a.user_id = p_user_id
+          AND (p_transaction_type IS NULL OR tr.transaction_type::VARCHAR = p_transaction_type)
+        ORDER BY tr.created_at DESC
+        LIMIT p_limit
+        OFFSET p_offset
+    ) t;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 3. Réparation de get_balance
+DROP FUNCTION IF EXISTS public.get_balance(UUID);
+CREATE OR REPLACE FUNCTION public.get_balance(p_user_id UUID)
+RETURNS SETOF json AS $$
+BEGIN
+    RETURN QUERY
+    SELECT row_to_json(t) FROM (
+        SELECT
+            a.balance_usd,
+            a.balance_sats,
+            a.balance_cdf,
+            a.monthly_sent_usd,
+            a.monthly_received_usd,
+            GREATEST(0, COALESCE(l.monthly_send_max_usd, 0) - a.monthly_sent_usd) as limit_remaining_usd
+        FROM public.accounts a
+        JOIN public.users u ON u.id = a.user_id
+        LEFT JOIN public.limits l ON l.kyc_level = u.kyc_level
+        WHERE a.user_id = p_user_id
+    ) t;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 4. Accorder les permissions
+GRANT EXECUTE ON FUNCTION public.get_transaction_history(UUID, INT, INT, VARCHAR) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_balance(UUID) TO authenticated;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
+
+-- 5. Rafraîchir l'API Supabase
+NOTIFY pgrst, 'reload schema';
+
+
+
+-- 1. Nettoyage des anciennes versions
+DROP FUNCTION IF EXISTS public.get_transaction_history(UUID, INT, INT, VARCHAR);
+DROP FUNCTION IF EXISTS public.get_transaction_history(UUID, INT, INT);
+
+-- 2. Création de la fonction corrigée (Format attendu par l'application)
+CREATE OR REPLACE FUNCTION public.get_transaction_history(
+    p_user_id UUID,
+    p_limit INT DEFAULT 20,
+    p_offset INT DEFAULT 0
+)
+RETURNS TABLE (
+    id UUID,
+    amount_usd NUMERIC,
+    fee_usd NUMERIC,
+    counterparty_name TEXT,
+    transaction_type TEXT,
+    note TEXT,
+    status TEXT,
+    created_at TIMESTAMPTZ,
+    is_incoming BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        tr.id,
+        tr.amount_usd::NUMERIC,
+        tr.fee_usd::NUMERIC,
+        COALESCE((SELECT u.full_name FROM public.users u WHERE u.id = tr.counterparty_user_id), 'Inconnu')::TEXT,
+        tr.transaction_type::TEXT,
+        tr.note,
+        tr.status::TEXT,
+        tr.created_at,
+        (tr.transaction_type::TEXT = 'receive') AS is_incoming
+    FROM public.transactions tr
+    JOIN public.accounts a ON a.id = tr.account_id
+    WHERE a.user_id = p_user_id
+    ORDER BY tr.created_at DESC
+    LIMIT p_limit
+    OFFSET p_offset;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 3. Autorisations
+GRANT EXECUTE ON FUNCTION public.get_transaction_history(UUID, INT, INT) TO authenticated;
+
+-- 4. Rafraîchir le cache
+NOTIFY pgrst, 'reload schema';
+
+
+-- Ajouter la colonne pour l'adresse Bitcoin On-chain
+ALTER TABLE public.accounts ADD COLUMN IF NOT EXISTS btc_onchain_address TEXT;
+
+-- Vérifier que la colonne lightning_address existe aussi
+ALTER TABLE public.accounts ADD COLUMN IF NOT EXISTS lightning_address TEXT;

@@ -18,16 +18,44 @@ class LightningAddressService {
   // ADRESSE LIGHTNING
   // ════════════════════════════════════════════════════════
 
-  Future<String?> getLightningAddress(String userId) async {
+  Future<Map<String, String?>> getUserAddresses(String userId) async {
     try {
       final response = await _supabase
           .from('accounts')
-          .select('lightning_address')
+          .select('lightning_address, btc_onchain_address')
           .eq('user_id', userId)
           .maybeSingle();
-      return response?['lightning_address'] as String?;
+      
+      if (response == null) return {'ln': null, 'btc': null};
+      
+      return {
+        'ln': response['lightning_address'] as String?,
+        'btc': response['btc_onchain_address'] as String?,
+      };
     } catch (e) {
-      return null;
+      return {'ln': null, 'btc': null};
+    }
+  }
+
+  Future<void> saveAddresses({
+    required String userId,
+    String? lightningAddress,
+    String? btcAddress,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
+      if (lightningAddress != null) data['lightning_address'] = lightningAddress;
+      if (btcAddress != null) data['btc_onchain_address'] = btcAddress;
+      
+      if (data.isEmpty) return;
+
+      await _supabase
+          .from('accounts')
+          .update(data)
+          .eq('user_id', userId);
+    } catch (e) {
+      debugPrint('Erreur sauvegarde adresses: $e');
+      rethrow;
     }
   }
 

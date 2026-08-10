@@ -2,12 +2,15 @@
 // Version Greenlight UNIQUE et stable
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:breez_sdk/breez_sdk.dart';
 import 'package:breez_sdk/bridge_generated.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config.dart';
 
@@ -20,7 +23,10 @@ class BreezService {
   final _sdk = BreezSDK();
 
   bool _initialized = false;
+  bool _connected = false;
+  
   bool get isInitialized => _initialized;
+  bool get isConnected => _connected;
 
   // ════════════════════════════════════════════════════════
   // INITIALISATION
@@ -37,27 +43,49 @@ class BreezService {
     required String breezServer,
     required String chainnotifierUrl,
     required Network network,
+    String? inviteCode,
   }) async {
     await initialize();
 
     final seed = await _getOrCreateSeed();
+    final docsDir = await getApplicationDocumentsDirectory();
+    final workingDir = Directory('${docsDir.path}/breez_sdk');
+    
+    if (!await workingDir.exists()) {
+      await workingDir.create(recursive: true);
+    }
 
     final config = Config(
       breezserver: breezServer,
       chainnotifierUrl: chainnotifierUrl,
       mempoolspaceUrl: chainnotifierUrl,
-      workingDir: '.',
+      workingDir: workingDir.path,
       network: network,
       paymentTimeoutSec: 60,
       apiKey: apiKey,
       maxfeePercent: 0.01,
       exemptfeeMsat: 1000,
       nodeConfig: NodeConfig.greenlight(
-        config: const GreenlightNodeConfig(),
+        config: GreenlightNodeConfig(
+          partnerCredentials: GreenlightCredentials(
+            developerKey: base64.decode(kGreenlightKey.replaceAll('\n', '')),
+            developerCert: base64.decode(kGreenlightCert.replaceAll('\n', '')),
+          ),
+          inviteCode: inviteCode,
+        ),
       ),
     );
 
-    await _sdk.connect(req: ConnectRequest(config: config, seed: seed));
+    try {
+      debugPrint('Tentative de connexion au SDK Breez...');
+      await _sdk.connect(req: ConnectRequest(config: config, seed: seed));
+      _connected = true;
+      debugPrint('SDK Breez connecté avec succès.');
+    } catch (e) {
+      debugPrint('Erreur lors de la connexion au SDK Breez : $e');
+      _connected = false;
+      rethrow;
+    }
     
     try {
       if (kBreezWebhookUrl.isNotEmpty) {
@@ -91,7 +119,7 @@ class BreezService {
     required String description,
     int expiry = 3600,
   }) async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté au nœud');
     return _sdk.receivePayment(
       req: ReceivePaymentRequest(
         amountMsat: amountSats * 1000,
@@ -107,7 +135,7 @@ class BreezService {
     bool useTrampoline = false,
     String? label,
   }) async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté au nœud');
     return _sdk.sendPayment(
       req: SendPaymentRequest(
         bolt11: bolt11,
@@ -126,7 +154,7 @@ class BreezService {
     int maxRetries = 3,
     Duration initialDelay = const Duration(seconds: 2),
   }) async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté au nœud');
 
     int attempt = 0;
     Duration delay = initialDelay;
@@ -180,24 +208,24 @@ class BreezService {
   }
 
   Future<Payment?> paymentByHash(String hash) async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté');
     return _sdk.paymentByHash(hash: hash);
   }
 
   Future<LNInvoice> parseInvoice(String bolt11) async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté');
     return _sdk.parseInvoice(bolt11);
   }
 
   Future<NodeState> getNodeState() async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté');
     final info = await _sdk.nodeInfo();
-    if (info == null) throw Exception('No node info');
+    if (info == null) throw Exception('Impossible de récupérer les infos du nœud');
     return info;
   }
 
   Future<Balance> getBalance() async {
-    if (!_initialized) throw Exception('Breez SDK not initialized');
+    if (!_connected) throw Exception('Breez SDK non connecté');
     final nodeInfo = await _sdk.nodeInfo();
     if (nodeInfo == null) {
       return Balance(onchainBalanceMsat: 0, channelBalanceMsat: 0);
@@ -209,7 +237,23 @@ class BreezService {
   }
 
   Future<void> registerWebhook({required String webhookUrl}) async {
+    if (!_connected) throw Exception('Breez SDK non connecté');
     await _sdk.registerWebhook(webhookUrl: webhookUrl);
+  }
+
+  // ════════════════════════════════════════════════════════
+  // ON-CHAIN (BITCOIN TESTNET)
+  // ════════════════════════════════════════════════════════
+
+  Future<String> getOnchainAddress() async {
+    if (!_connected) throw Exception('Breez SDK non connecté');
+    try {
+      final response = await _sdk.receiveOnchain(req: ReceiveOnchainRequest());
+      return response.bitcoinAddress;
+    } catch (e) {
+      debugPrint('Erreur lors de la génération de l\'adresse Bitcoin : $e');
+      rethrow;
+    }
   }
 
   // ════════════════════════════════════════════════════════
